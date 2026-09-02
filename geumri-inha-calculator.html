@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>금리인하요구권 절감액 계산기</title>
+<style>
+  :root{
+    --ink:#101B2E; --ink-soft:#4A5670; --paper:#FFFFFF;
+    --field:#F2F4F8; --line:#DCE2EC;
+    --save:#0E6E63; --save-bg:#EAF5F3; --save-line:#BEDDD7;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:18px 14px 34px;background:#EEF1F6;color:var(--ink);
+    font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+    -webkit-text-size-adjust:100%;}
+  .wrap{max-width:520px;margin:0 auto}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:20px 18px}
+  h1{font-size:19px;line-height:1.4;margin:0 0 4px;letter-spacing:-0.4px}
+  .lede{margin:0 0 20px;font-size:13px;color:var(--ink-soft);line-height:1.6}
+  .field{margin-bottom:15px}
+  label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+  .hint{font-weight:400;color:var(--ink-soft);font-size:12px}
+  .inputrow{display:flex;align-items:center;gap:8px}
+  input[type=number]{flex:1;min-width:0;padding:11px 12px;font-size:16px;
+    font-variant-numeric:tabular-nums;text-align:right;border:1px solid var(--line);
+    border-radius:9px;background:var(--field);color:var(--ink)}
+  input[type=number]::placeholder{color:#9AA4B5;font-weight:400}
+  input[type=number]:focus{outline:2px solid var(--save);outline-offset:1px;background:#fff}
+  .unit{font-size:13px;color:var(--ink-soft);flex-shrink:0}
+  .chips{display:flex;gap:6px;margin-top:7px}
+  .chips button{flex:1;padding:8px 2px;font-size:12px;font-family:inherit;font-weight:600;
+    border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink-soft);cursor:pointer}
+  .chips button[aria-pressed="true"]{background:var(--save);border-color:var(--save);color:#fff}
+  .chips button:focus-visible{outline:2px solid var(--save);outline-offset:2px}
+  .chiphint{margin:6px 0 0;font-size:11.5px;color:var(--ink-soft);line-height:1.6}
+
+  .empty{margin-top:22px;border-top:1px solid var(--line);padding-top:26px;
+    text-align:center;color:var(--ink-soft);font-size:13.5px;line-height:1.7}
+  .empty strong{display:block;color:var(--ink);font-size:15px;margin-bottom:5px}
+
+  .hero{margin-top:22px;border-top:1px solid var(--line);padding-top:20px}
+  .hero .k{font-size:13px;color:var(--ink-soft);margin:0 0 2px}
+  .hero .v{font-size:40px;font-weight:800;letter-spacing:-1.6px;color:var(--save);
+    font-variant-numeric:tabular-nums;line-height:1.1;margin:0}
+  .hero .v span{font-size:18px;font-weight:600;margin-left:2px}
+  .hero .d{font-size:12.5px;color:var(--ink-soft);margin:9px 0 0;line-height:1.6}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+  .cell{background:var(--save-bg);border:1px solid var(--save-line);border-radius:10px;padding:12px}
+  .cell p{margin:0}
+  .cell .k{font-size:12px;color:var(--ink-soft)}
+  .cell .v{font-size:17px;font-weight:700;color:var(--save);
+    font-variant-numeric:tabular-nums;margin-top:3px}
+
+  .ba{margin-top:16px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .ba table{width:100%;border-collapse:collapse;font-size:13px}
+  .ba th{background:var(--field);color:var(--ink-soft);font-size:12px;font-weight:600;
+    padding:9px 10px;text-align:right}
+  .ba th:first-child{text-align:left}
+  .ba td{padding:10px;border-top:1px solid var(--line);text-align:right;
+    font-variant-numeric:tabular-nums}
+  .ba td:first-child{text-align:left;font-weight:600;color:var(--ink-soft);font-size:12.5px}
+  .ba td.after{color:var(--save);font-weight:700}
+
+  .term{margin-top:16px}
+  .term h2{margin:0 0 3px;font-size:15px}
+  .term .sub{margin:0 0 10px;font-size:12px;color:var(--ink-soft)}
+  table.t{width:100%;border-collapse:collapse;font-size:12.5px}
+  table.t th,table.t td{padding:9px 4px;border-bottom:1px solid var(--line);
+    text-align:right;font-variant-numeric:tabular-nums}
+  table.t th{color:var(--ink-soft);font-weight:600;font-size:12px}
+  table.t th:first-child,table.t td:first-child{text-align:left;font-weight:600}
+  table.t td.big{color:var(--save);font-weight:700}
+
+  .reset{width:100%;margin-top:18px;padding:13px;font-size:14px;font-weight:700;
+    font-family:inherit;border:1px solid var(--ink);border-radius:10px;
+    background:#fff;color:var(--ink);cursor:pointer}
+  .reset:hover{background:var(--ink);color:#fff}
+  .reset:focus-visible{outline:2px solid var(--save);outline-offset:2px}
+  .foot{font-size:11.5px;color:var(--ink-soft);margin:16px 0 0;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>금리인하요구권 절감액 계산기</h1>
+    <p class="lede">금리가 얼마나 내려가면 내 이자가 얼마나 줄어드는지 계산합니다. 남은 대출금액과 남은 기간, 인하 폭만 넣으면 됩니다.</p>
+
+    <div class="field">
+      <label for="amt">남은 대출금액 <span class="hint">지금 남아 있는 원금</span></label>
+      <div class="inputrow"><input id="amt" type="number" inputmode="decimal" placeholder="예: 2.5" step="0.1" min="0"><span class="unit">억원</span></div>
+    </div>
+
+    <div class="field">
+      <label for="rate">현재 연 금리</label>
+      <div class="inputrow"><input id="rate" type="number" inputmode="decimal" placeholder="예: 5.22" step="0.01" min="0"><span class="unit">%</span></div>
+    </div>
+
+    <div class="field">
+      <label for="years">남은 상환기간</label>
+      <div class="inputrow"><input id="years" type="number" inputmode="numeric" placeholder="예: 25" step="1" min="1" max="50"><span class="unit">년</span></div>
+    </div>
+
+    <div class="field">
+      <label for="cut">금리 인하 폭</label>
+      <div class="inputrow"><input id="cut" type="number" inputmode="decimal" placeholder="예: 0.3" step="0.05" min="0" max="5"><span class="unit">%p</span></div>
+      <div class="chips" id="chips">
+        <button type="button" data-c="0.2">0.2</button>
+        <button type="button" data-c="0.3">0.3</button>
+        <button type="button" data-c="0.65">0.65</button>
+        <button type="button" data-c="1.14">1.14</button>
+        <button type="button" data-c="1.7">1.7</button>
+      </div>
+      <p class="chiphint">2026년 상반기 은행권 실제 인하율은 0.65%p에서 1.70%p 사이에 분포했습니다. 얼마가 될지 모르겠다면 0.3%p 정도로 먼저 넣어보세요.</p>
+    </div>
+
+    <div class="empty" id="empty">
+      <strong>네 칸을 채우면 결과가 나옵니다</strong>
+      남은 대출금액, 현재 금리, 남은 기간, 인하 폭을 넣어주세요.
+    </div>
+
+    <div id="output" style="display:none">
+      <div class="hero">
+        <p class="k" id="herok">신청이 받아들여지면 아끼는 이자</p>
+        <p class="v"><span id="total">0</span><span>원</span></p>
+        <p class="d" id="herod"></p>
+      </div>
+
+      <div class="grid">
+        <div class="cell"><p class="k">매달 아끼는 돈</p><p class="v" id="mon">0원</p></div>
+        <div class="cell"><p class="k">1년에 아끼는 돈</p><p class="v" id="yr">0원</p></div>
+      </div>
+
+      <div class="ba">
+        <table>
+          <thead><tr><th>구분</th><th>지금</th><th>인하 후</th></tr></thead>
+          <tbody>
+            <tr><td>적용 금리</td><td id="r1">–</td><td class="after" id="r2">–</td></tr>
+            <tr><td>월 상환액</td><td id="m1">–</td><td class="after" id="m2">–</td></tr>
+            <tr><td>남은 기간 총이자</td><td id="i1">–</td><td class="after" id="i2">–</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="term">
+        <h2>인하 폭별로 얼마나 다를까</h2>
+        <p class="sub">같은 조건에서 인하 폭만 바꿔본 결과입니다.</p>
+        <table class="t">
+          <thead><tr><th>인하 폭</th><th>월 절감</th><th>연 절감</th><th>총이자 절감</th></tr></thead>
+          <tbody id="tbl"></tbody>
+        </table>
+      </div>
+
+      <button type="button" class="reset" id="reset">다시 계산해보기</button>
+    </div>
+
+    <p class="foot">원리금균등상환 기준 단순 계산이며 실제 은행 약정과 다를 수 있습니다. 인하된 금리가 남은 기간 유지된다고 가정한 값으로, 변동금리는 이후 시장금리에 따라 달라집니다. 신청 결과와 인하 폭은 은행 심사와 신용 상태에 따라 결정됩니다. 참고용으로만 활용하세요.</p>
+  </div>
+</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id);};
+
+  function won(n){return Math.round(n).toLocaleString("ko-KR")+"원";}
+  function eok(n){
+    if(n>=100000000){
+      var e=Math.floor(n/100000000), m=Math.round((n-e*100000000)/10000);
+      return e+"억"+(m>0?" "+m.toLocaleString("ko-KR")+"만":"")+"원";
+    }
+    return Math.round(n/10000).toLocaleString("ko-KR")+"만원";
+  }
+
+  function loan(P,annual,years){
+    var r=annual/100/12, n=Math.round(years*12);
+    var M=(r===0)?P/n:P*r/(1-Math.pow(1+r,-n));
+    return {m:M, ti:M*n-P, n:n};
+  }
+
+  function calc(){
+    var a=$("amt").value.trim(), rr=$("rate").value.trim(),
+        y=$("years").value.trim(), c=$("cut").value.trim();
+    var P=parseFloat(a)*100000000, rate=parseFloat(rr),
+        years=parseInt(y), cut=parseFloat(c);
+
+    Array.prototype.forEach.call($("chips").querySelectorAll("button"),function(b){
+      b.setAttribute("aria-pressed", (c!==""&&parseFloat(b.dataset.c)===cut)?"true":"false");
+    });
+
+    var ready=(a!==""&&rr!==""&&y!==""&&c!==""&&P>0&&!isNaN(rate)&&rate>0&&years>0&&cut>0&&cut<=rate);
+    if(!ready){
+      $("empty").style.display="block"; $("output").style.display="none";
+      if(!isNaN(cut)&&!isNaN(rate)&&cut>rate&&rr!==""&&c!==""){
+        $("empty").innerHTML="<strong>인하 폭을 다시 확인해 주세요</strong>현재 금리보다 큰 폭은 계산할 수 없습니다.";
+      } else {
+        $("empty").innerHTML="<strong>네 칸을 채우면 결과가 나옵니다</strong>남은 대출금액, 현재 금리, 남은 기간, 인하 폭을 넣어주세요.";
+      }
+      return;
+    }
+    $("empty").style.display="none"; $("output").style.display="block";
+
+    var now=loan(P,rate,years), aft=loan(P,rate-cut,years);
+    var save=now.ti-aft.ti, mon=now.m-aft.m;
+
+    $("total").textContent=Math.round(save).toLocaleString("ko-KR");
+    $("herod").textContent="연 "+rate+"%에서 "+(rate-cut).toFixed(2)+"%로 "+cut+"%p 내려갔을 때, 남은 "+years+"년 동안 줄어드는 이자입니다.";
+    $("mon").textContent=won(mon);
+    $("yr").textContent=won(mon*12);
+
+    $("r1").textContent="연 "+rate.toFixed(2)+"%";
+    $("r2").textContent="연 "+(rate-cut).toFixed(2)+"%";
+    $("m1").textContent=won(now.m);
+    $("m2").textContent=won(aft.m);
+    $("i1").textContent=eok(now.ti);
+    $("i2").textContent=eok(aft.ti);
+
+    var list=[0.1,0.2,0.3,0.5,0.65,1.0,1.7], html="";
+    list.forEach(function(v){
+      if(v>=rate) return;
+      var t=loan(P,rate-v,years);
+      var dm=now.m-t.m;
+      var on=(Math.abs(v-cut)<0.001)?' style="background:#EAF5F3"':'';
+      html+="<tr"+on+"><td>"+v+"%p</td><td>"+won(dm)+"</td><td>"+won(dm*12)+"</td><td class='big'>"+eok(now.ti-t.ti)+"</td></tr>";
+    });
+    $("tbl").innerHTML=html;
+  }
+
+  ["amt","rate","years","cut"].forEach(function(id){$(id).addEventListener("input",calc);});
+
+  $("chips").addEventListener("click",function(e){
+    var b=e.target.closest("button"); if(!b) return;
+    $("cut").value=b.dataset.c; calc();
+  });
+
+  $("reset").addEventListener("click",function(){
+    ["amt","rate","years","cut"].forEach(function(id){$(id).value="";});
+    calc();
+    window.scrollTo({top:0,behavior:"smooth"});
+    $("amt").focus();
+  });
+
+  calc();
+})();
+</script>
+</body>
+</html>
