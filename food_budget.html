@@ -2,56 +2,943 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>우리집 한 달 식비 자동조절 계산기</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>우리집 한 달 식비 자동조절 계산기 FINAL</title>
 <style>
-:root{--bg:#f7f8fa;--card:#fff;--text:#17191f;--muted:#6b7280;--border:#e5e7eb;--accent:#2563eb;--good:#16a34a;--warn:#d97706;--bad:#dc2626;--c1:#2563eb;--c2:#7c3aed;--c3:#ea580c;--c4:#db2777;--c5:#0891b2}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",Arial,sans-serif;line-height:1.55}.wrap{max-width:980px;margin:auto;padding:24px 16px 48px}.panel,.card{background:var(--card);border:1px solid var(--border);border-radius:16px}.panel{padding:18px;margin-top:14px}.card{padding:14px}h1{font-size:28px;margin:0 0 8px}h2{font-size:18px;margin:0}.muted{color:var(--muted)}.tiny{font-size:12px}.lead{color:var(--muted);margin:0 0 18px}.grid{display:grid;gap:12px}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}.g5{grid-template-columns:repeat(5,minmax(0,1fr))}@media(max-width:820px){.g4,.g5{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:1fr}}@media(max-width:560px){.g2,.g4,.g5{grid-template-columns:1fr}h1{font-size:24px}.metric{font-size:22px!important}}label{font-size:14px;font-weight:600}input,select,button{font:inherit}input,select{width:100%;min-height:46px;margin-top:6px;border:1px solid var(--border);border-radius:12px;padding:0 12px;background:#fff;color:var(--text)}input[type=range]{border:none;padding:0;background:transparent}button{min-height:44px;border:1px solid var(--border);background:#fff;border-radius:999px;padding:9px 14px;font-weight:700;cursor:pointer}.top-actions{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.metric{font-size:26px;font-weight:800;letter-spacing:-.02em}.bar{height:10px;border-radius:999px;background:#edf0f4;overflow:hidden;margin-top:8px}.fill{height:100%;border-radius:999px;transition:width .2s}.c1{background:var(--c1)}.c2{background:var(--c2)}.c3{background:var(--c3)}.c4{background:var(--c4)}.c5{background:var(--c5)}.status-good{border-left:5px solid var(--good)}.status-warn{border-left:5px solid var(--warn)}.status-bad{border-left:5px solid var(--bad)}.hidden{display:none!important}.radio-box{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--border);border-radius:14px;padding:14px;cursor:pointer}.radio-box input{width:auto;min-height:auto;margin-top:3px}.section-gap{margin-top:14px}.hint{font-size:12px;color:var(--muted);min-height:18px;margin-top:4px}.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#eff6ff;color:#2563eb;font-size:12px;font-weight:700}.warn-text{font-size:13px;color:var(--bad);margin-top:8px}.footer-note{font-size:12px;color:var(--muted);margin-top:14px}
+:root{
+  --bg:#f6f7f9;--card:#fff;--text:#17191f;--muted:#6b7280;--border:#e5e7eb;
+  --accent:#2563eb;--accent-soft:#eff6ff;--good:#15803d;--warn:#d97706;--bad:#dc2626;
+  --blue:#2563eb;--violet:#7c3aed;--orange:#ea580c;--pink:#db2777;--cyan:#0891b2;--green:#16a34a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",Arial,sans-serif;line-height:1.55}
+.wrap{max-width:1060px;margin:0 auto;padding:24px 16px 56px}
+h1{font-size:29px;line-height:1.25;margin:0 0 8px}
+h2{font-size:19px;margin:0}
+h3{font-size:16px;margin:0}
+p{margin:0}
+.lead{color:var(--muted)}
+.panel,.card{background:var(--card);border:1px solid var(--border);border-radius:18px}
+.panel{padding:18px;margin-top:14px}.card{padding:14px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.grid{display:grid;gap:12px}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}.g5{grid-template-columns:repeat(5,minmax(0,1fr))}
+@media(max-width:840px){.g5,.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.g5,.g4,.g3,.g2{grid-template-columns:1fr}h1{font-size:24px}.metric{font-size:22px!important}.compare{grid-template-columns:1fr!important}.compare-arrow{transform:rotate(90deg);text-align:center}}
+label{display:block;font-size:14px;font-weight:700}
+input,select,button{font:inherit}
+input,select{width:100%;min-height:46px;margin-top:6px;border:1px solid var(--border);border-radius:12px;padding:0 12px;background:#fff;color:var(--text)}
+input[type=range]{border:0;padding:0;background:transparent}
+input.smart-money:focus,select:focus{outline:2px solid #bfdbfe;border-color:var(--accent)}
+button{min-height:44px;border:1px solid var(--border);background:#fff;border-radius:999px;padding:9px 14px;font-weight:800;cursor:pointer;color:var(--text)}
+button:hover{background:#f9fafb}
+button[aria-pressed="true"]{background:var(--accent-soft);border-color:#bfdbfe;color:var(--accent)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+.muted{color:var(--muted)}.tiny{font-size:12px}.hidden{display:none!important}.section-gap{margin-top:14px}
+.metric{font-size:26px;font-weight:900;letter-spacing:-.03em;overflow-wrap:anywhere}
+.bar{height:10px;background:#edf0f4;border-radius:999px;overflow:hidden;margin-top:8px}
+.fill{height:100%;border-radius:999px;transition:width .2s ease}.c1{background:var(--blue)}.c2{background:var(--violet)}.c3{background:var(--orange)}.c4{background:var(--pink)}.c5{background:var(--cyan)}.c6{background:var(--green)}
+.good{border-left:5px solid var(--good)}.warn{border-left:5px solid var(--warn)}.bad{border-left:5px solid var(--bad)}
+.badge{display:inline-block;border-radius:999px;padding:4px 8px;font-size:12px;font-weight:900;background:var(--accent-soft);color:var(--accent)}
+.smart-help{background:var(--accent-soft);border:1px solid #dbeafe;border-radius:14px;padding:13px 14px;margin-top:12px;font-size:13px}
+.money-result{min-height:20px;margin-top:4px;font-size:12px;color:var(--muted);font-weight:500}
+.money-result strong{color:var(--accent)}
+.money-result.error{color:var(--bad)}
+.unit-chip{display:inline-block;background:#f3f4f6;border-radius:999px;padding:2px 6px;margin-left:4px;font-size:10px;font-weight:800}
+.mini-btn{min-height:30px;padding:3px 8px;margin:5px 5px 0 0;font-size:11px}
+.summaryBox{padding:15px;border-radius:14px;background:#f8fafc;border:1px solid var(--border)}
+.radio-box{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--border);border-radius:14px;padding:14px;cursor:pointer}
+.radio-box input{width:auto;min-height:auto;margin-top:3px}
+.live-sim{padding:15px;border:1px solid #dbeafe;background:#f8fbff;border-radius:16px}
+.compare{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-top:12px}
+.compare-box{background:#fff;border:1px solid var(--border);border-radius:14px;padding:12px;min-width:0}
+.compare-arrow{font-size:20px;font-weight:900;color:var(--accent)}
+.compare-label{font-size:11px;color:var(--muted);font-weight:700}
+.compare-value{font-size:21px;font-weight:900;letter-spacing:-.02em;overflow-wrap:anywhere}
+.sim-good{color:var(--good)}.sim-warn{color:var(--warn)}.sim-bad{color:var(--bad)}
+.rank{display:flex;gap:12px;align-items:flex-start}.rank-num{width:28px;height:28px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;flex:0 0 auto}
+.progress-note{font-size:12px;color:var(--muted);font-weight:700}
+.footer{font-size:12px;color:var(--muted);margin-top:14px}
+details summary{cursor:pointer;font-weight:800}
 </style>
 </head>
 <body>
 <div class="wrap">
-<h1>우리집 한 달 식비 자동조절 계산기</h1>
-<p class="lead">가족 수와 실제 지출을 넣으면 남은 하루 예산, 월말 예상 식비, 배달·외식 가능 횟수, 1년 절약액까지 자동 계산합니다.</p>
-<div class="top-actions"><button id="sampleBtn" type="button">예시값 불러오기</button><button id="clearBtn" type="button">입력값 전체 초기화</button></div>
-<form id="calcForm">
-<section class="panel"><h2>1. 우리 집 기본 설정</h2><p class="muted tiny section-gap">빈칸이어도 괜찮습니다. 필요한 항목부터 입력하면 결과가 자동으로 갱신됩니다.</p>
-<div class="grid g3 section-gap">
-<label>가족 수<select id="family"><option value="">선택</option><option value="1">1명</option><option value="2">2명</option><option value="3">3명</option><option value="4">4명</option><option value="5">5명</option><option value="6">6명 이상</option></select></label>
-<label>월 가구소득 <span class="muted">(선택)</span><input id="income" type="number" min="0" step="10000" placeholder="예: 5000000"><div id="incomeHint" class="hint"></div></label>
-<label>오늘 날짜<input id="today" type="number" min="1" max="31" placeholder="예: 15"><div id="dayHint" class="hint"></div></label>
+  <h1>우리집 한 달 식비 자동조절 계산기</h1>
+  <p class="lead">이번 달 식비가 어디서 커지는지 확인하고, 남은 예산·월말 예상·배달/외식 가능 횟수·절약 후 결과까지 한 번에 계산해보세요.</p>
+
+  <div class="smart-help">
+    <strong>금액은 그냥 편하게 입력하세요.</strong><br>
+    <b>120</b> → 120만원 · <b>8</b> → 8만원 · <b>14900</b> → 14,900원 ·
+    <b>6.5만</b> → 65,000원 · <b>150,000원</b> → 150,000원<br>
+    계산기가 해석한 실제 금액은 입력창 바로 아래에서 확인할 수 있습니다.
+  </div>
+
+  <div class="actions">
+    <button id="sampleBtn" type="button">예시값 불러오기</button>
+    <button id="clearBtn" type="button">입력값 전체 초기화</button>
+    <span id="inputProgress" class="progress-note" style="align-self:center"></span>
+  </div>
+
+  <form id="calcForm">
+    <section class="panel">
+      <h2>1. 우리 집 기본 설정</h2>
+      <div class="grid g3 section-gap">
+        <label>가족 수
+          <select id="family">
+            <option value="">선택</option>
+            <option value="1">1명</option><option value="2">2명</option><option value="3">3명</option>
+            <option value="4">4명</option><option value="5">5명</option><option value="6">6명 이상</option>
+          </select>
+        </label>
+        <label>월 실수령 가구소득 <span class="muted">(선택)</span>
+          <input id="income" class="smart-money" type="text" inputmode="decimal" autocomplete="off" placeholder="예: 500">
+          <div id="incomeHint" class="money-result"></div>
+        </label>
+        <div class="summaryBox">
+          <div class="tiny muted">계산 기준일</div>
+          <div id="baseDateText" style="font-weight:900;margin-top:4px">오늘 자동 적용</div>
+          <div id="baseDateSub" class="tiny muted" style="margin-top:3px"></div>
+        </div>
+      </div>
+
+      <div class="section-gap">
+        <div class="muted tiny" style="margin-bottom:8px">이번 달 식비 목표 설정</div>
+        <div class="grid g2">
+          <label class="radio-box">
+            <input type="radio" name="budgetMethod" value="fixed">
+            <span><strong>목표 직접 입력</strong><br><span class="muted tiny">이번 달 식비 한도를 직접 정합니다.</span></span>
+          </label>
+          <label class="radio-box">
+            <input type="radio" name="budgetMethod" value="auto">
+            <span><strong>지난달 기준 자동 설정</strong><br><span class="muted tiny">지난달 식비에서 원하는 만큼 줄여 목표를 만듭니다.</span></span>
+          </label>
+        </div>
+      </div>
+
+      <div id="fixedWrap" class="section-gap hidden">
+        <label>이번 달 목표 식비
+          <input id="target" class="smart-money" type="text" inputmode="decimal" autocomplete="off" placeholder="예: 120">
+          <div id="targetHint" class="money-result"></div>
+        </label>
+        <div class="actions" style="margin-bottom:0">
+          <button type="button" class="targetPreset" data-value="80">80만</button>
+          <button type="button" class="targetPreset" data-value="100">100만</button>
+          <button type="button" class="targetPreset" data-value="120">120만</button>
+          <button type="button" class="targetPreset" data-value="150">150만</button>
+          <button type="button" class="targetPreset" data-value="200">200만</button>
+        </div>
+      </div>
+
+      <div id="autoWrap" class="grid g2 section-gap hidden">
+        <label>지난달 총 식비
+          <input id="lastMonth" class="smart-money" type="text" inputmode="decimal" autocomplete="off" placeholder="예: 140">
+          <div id="lastMonthHint" class="money-result"></div>
+        </label>
+        <label>이번 달 절감 목표 <strong id="saveRateLabel">10%</strong>
+          <input id="saveRate" type="range" min="0" max="30" step="1" value="10">
+          <div id="autoTargetPreview" class="money-result"></div>
+        </label>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="row">
+        <div>
+          <h2>2. 이번 달 지금까지 실제 식비</h2>
+          <p class="muted tiny section-gap">장보기·배달·외식·간식만 나눠 넣으면 식비 구조가 바로 보입니다.</p>
+        </div>
+        <div style="text-align:right">
+          <div class="tiny muted">현재 식비 합계</div>
+          <div id="currentTotal" style="font-weight:900">0원</div>
+        </div>
+      </div>
+
+      <div class="grid g4 section-gap">
+        <label>장보기·집밥
+          <input id="grocery" class="smart-money" type="text" inputmode="decimal" placeholder="예: 36">
+          <div id="groceryHint" class="money-result"></div>
+        </label>
+        <label>배달
+          <input id="delivery" class="smart-money" type="text" inputmode="decimal" placeholder="예: 24">
+          <div id="deliveryHint" class="money-result"></div>
+        </label>
+        <label>외식
+          <input id="dining" class="smart-money" type="text" inputmode="decimal" placeholder="예: 12">
+          <div id="diningHint" class="money-result"></div>
+        </label>
+        <label>간식·커피
+          <input id="snack" class="smart-money" type="text" inputmode="decimal" placeholder="예: 6 또는 37500">
+          <div id="snackHint" class="money-result"></div>
+        </label>
+      </div>
+
+      <details class="section-gap">
+        <summary>배달·외식 횟수까지 계산하기</summary>
+        <div class="grid g2 section-gap">
+          <label>배달 1회 평균 결제액
+            <input id="avgDelivery" class="smart-money" type="text" inputmode="decimal" placeholder="예: 4 또는 40000">
+            <div id="avgDeliveryHint" class="money-result"></div>
+          </label>
+          <label>가족 외식 1회 평균 결제액
+            <input id="avgDining" class="smart-money" type="text" inputmode="decimal" placeholder="예: 8 또는 80000">
+            <div id="avgDiningHint" class="money-result"></div>
+          </label>
+        </div>
+      </details>
+    </section>
+
+    <section class="panel">
+      <div class="row">
+        <div>
+          <h2>3. 식비 포트폴리오</h2>
+          <p class="muted tiny section-gap">정답 비율이 아니라, 우리 집 식비를 관리하기 위한 예산 틀입니다.</p>
+        </div>
+        <select id="mode" style="max-width:230px">
+          <option value="save">절약형</option>
+          <option value="balance" selected>균형형</option>
+          <option value="easy">편의형</option>
+          <option value="custom">직접 조정</option>
+        </select>
+      </div>
+
+      <div id="modeSummary" class="section-gap" style="font-weight:800"></div>
+      <div id="customWrap" class="grid g5 section-gap hidden">
+        <label>장보기 %<input id="pGrocery" type="number" min="0" max="100" value="55"></label>
+        <label>배달 %<input id="pDelivery" type="number" min="0" max="100" value="18"></label>
+        <label>외식 %<input id="pDining" type="number" min="0" max="100" value="15"></label>
+        <label>간식 %<input id="pSnack" type="number" min="0" max="100" value="8"></label>
+        <label>예비비 %<input id="pReserve" type="number" min="0" max="100" value="4"></label>
+      </div>
+      <div id="customError" class="money-result error hidden"></div>
+    </section>
+
+    <section class="panel">
+      <div class="row">
+        <div>
+          <h2>4. 절약 시뮬레이션</h2>
+          <p class="muted tiny section-gap">슬라이더를 움직이는 순간 월말 예상 식비와 목표 달성 여부가 바로 바뀝니다.</p>
+        </div>
+        <div class="actions" style="margin:0">
+          <button type="button" class="simPreset" data-d="0" data-o="0" data-g="0" data-s="0">0% 초기</button>
+          <button type="button" class="simPreset" data-d="1" data-o="0" data-g="3" data-s="5">가볍게</button>
+          <button type="button" class="simPreset" data-d="2" data-o="1" data-g="5" data-s="10">현실적으로</button>
+          <button type="button" class="simPreset" data-d="4" data-o="2" data-g="10" data-s="20">강하게</button>
+        </div>
+      </div>
+
+      <div class="grid g4 section-gap">
+        <label>배달 월 <strong id="cutDeliveryLabel">0회</strong> 줄이기
+          <input id="cutDelivery" type="range" min="0" max="8" step="1" value="0">
+        </label>
+        <label>외식 월 <strong id="cutDiningLabel">0회</strong> 줄이기
+          <input id="cutDining" type="range" min="0" max="4" step="1" value="0">
+        </label>
+        <label>장보기 비용 <strong id="cutGroceryLabel">0%</strong> 줄이기
+          <input id="cutGrocery" type="range" min="0" max="20" step="1" value="0">
+        </label>
+        <label>간식·커피 <strong id="cutSnackLabel">0%</strong> 줄이기
+          <input id="cutSnack" type="range" min="0" max="30" step="1" value="0">
+        </label>
+      </div>
+
+      <div id="autoPlan" class="summaryBox section-gap hidden">
+        <div class="row">
+          <div>
+            <div class="tiny muted">목표 식비 맞춤 자동조정</div>
+            <div id="autoPlanTitle" style="font-size:18px;font-weight:900;margin-top:3px">-</div>
+          </div>
+          <button id="applyAutoPlan" type="button" class="hidden">추천 조합 적용</button>
+        </div>
+        <p id="autoPlanText" class="tiny muted" style="margin-top:8px"></p>
+      </div>
+
+      <div id="liveSimulation" class="live-sim section-gap hidden" aria-live="polite">
+        <div class="row">
+          <div>
+            <strong>조정 후 결과가 실시간 반영됩니다</strong>
+            <p id="simulationNote" class="tiny muted" style="margin-top:3px"></p>
+          </div>
+          <span id="liveSavingBadge" class="badge">월 0원 절감</span>
+        </div>
+
+        <div class="compare">
+          <div class="compare-box">
+            <div class="compare-label">현재 페이스 월말 예상</div>
+            <div id="liveBeforeForecast" class="compare-value">-</div>
+          </div>
+          <div class="compare-arrow">→</div>
+          <div class="compare-box">
+            <div class="compare-label">조정 후 월말 예상</div>
+            <div id="liveAfterForecast" class="compare-value sim-good">-</div>
+          </div>
+        </div>
+
+        <div class="grid g4 section-gap">
+          <div class="card"><div class="tiny muted">조정 후 장보기</div><div id="liveGrocery" class="metric">-</div></div>
+          <div class="card"><div class="tiny muted">조정 후 배달</div><div id="liveDelivery" class="metric">-</div></div>
+          <div class="card"><div class="tiny muted">조정 후 외식</div><div id="liveDining" class="metric">-</div></div>
+          <div class="card"><div class="tiny muted">조정 후 간식</div><div id="liveSnack" class="metric">-</div></div>
+        </div>
+
+        <div class="compare">
+          <div class="compare-box">
+            <div class="compare-label">목표 대비 현재 예상</div>
+            <div id="liveBeforeGap" class="compare-value">-</div>
+          </div>
+          <div class="compare-arrow">→</div>
+          <div class="compare-box">
+            <div class="compare-label">목표 대비 조정 후</div>
+            <div id="liveAfterGap" class="compare-value">-</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </form>
+
+  <section id="emptyState" class="panel">
+    <strong>목표 식비와 현재 지출을 입력해보세요.</strong>
+    <p class="muted tiny section-gap">빠르게 체험하려면 ‘예시값 불러오기’를 누르면 됩니다.</p>
+  </section>
+
+  <section id="resultArea" class="hidden">
+    <div id="statusCard" class="panel good">
+      <div class="row">
+        <div>
+          <div class="tiny muted">이번 달 식비 진단</div>
+          <div id="statusText" class="metric">-</div>
+          <div id="statusSub" class="tiny muted"></div>
+        </div>
+        <div style="text-align:right">
+          <div class="tiny muted">월말 예상 식비</div>
+          <div id="forecast" class="metric">-</div>
+          <div id="forecastGap" class="tiny muted"></div>
+        </div>
+      </div>
+      <div class="bar"><div id="mainProgress" class="fill c1" style="width:0%"></div></div>
+      <div class="row tiny muted"><span id="spentLabel"></span><span id="targetLabel"></span></div>
+    </div>
+
+    <div class="grid g5 section-gap">
+      <div class="card"><div class="tiny muted">현재까지 사용</div><div id="currentSpentMetric" class="metric">-</div></div>
+      <div class="card"><div class="tiny muted">남은 예산</div><div id="remaining" class="metric">-</div></div>
+      <div class="card"><div class="tiny muted">남은 하루 한도</div><div id="daily" class="metric">-</div></div>
+      <div class="card"><div class="tiny muted">1인 하루 목표</div><div id="perPerson" class="metric">-</div></div>
+      <div class="card"><div class="tiny muted">소득 대비 식비 목표</div><div id="incomeRatio" class="metric">-</div></div>
+    </div>
+
+    <div class="grid g3 section-gap">
+      <div class="card">
+        <strong>🍱 배달 가능 횟수</strong>
+        <div id="deliveryLeft" class="metric">-</div>
+        <div id="deliveryNote" class="tiny muted"></div>
+      </div>
+      <div class="card">
+        <strong>🍽️ 외식 가능 횟수</strong>
+        <div id="diningLeft" class="metric">-</div>
+        <div id="diningNote" class="tiny muted"></div>
+      </div>
+      <div class="card">
+        <strong>🛒 앞으로 7일 식비 한도</strong>
+        <div id="weeklyLimit" class="metric">-</div>
+        <div id="weeklyNote" class="tiny muted"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="row">
+        <div>
+          <h2>항목별 목표 예산과 현재 속도</h2>
+          <p class="tiny muted section-gap">총액보다 ‘어느 항목이 목표보다 빨리 쓰이고 있는지’를 보는 게 핵심입니다.</p>
+        </div>
+        <div id="portfolioTotal" class="badge">-</div>
+      </div>
+      <div id="portfolioRows" class="section-gap"></div>
+    </div>
+
+    <div class="panel">
+      <h2>어디부터 손대는 게 효과적일까?</h2>
+      <div id="adjustRanks" class="grid g3 section-gap"></div>
+    </div>
+
+    <div class="panel">
+      <h2>이번 달 이렇게 해보세요</h2>
+      <div id="actions" class="grid g3 section-gap"></div>
+    </div>
+
+    <div class="panel">
+      <div class="row">
+        <div>
+          <h2>절약 시뮬레이션 결과</h2>
+          <p class="tiny muted section-gap">위 슬라이더 변화가 실시간으로 반영됩니다.</p>
+        </div>
+        <div style="text-align:right">
+          <div class="tiny muted">1년 단순 환산 절감</div>
+          <div id="annualSaving" class="metric">-</div>
+        </div>
+      </div>
+
+      <div class="grid g4 section-gap">
+        <div class="card"><div class="tiny muted">한 달 예상 절감</div><div id="monthlySaving" class="metric">-</div></div>
+        <div class="card"><div class="tiny muted">조정 후 월말 예상</div><div id="afterSaving" class="metric">-</div></div>
+        <div class="card"><div class="tiny muted">목표 대비 조정 후</div><div id="afterTargetGap" class="metric">-</div></div>
+        <div class="card"><div class="tiny muted">목표 달성에 더 필요한 금액</div><div id="needMoreSaving" class="metric">-</div></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>우리 집 식비 한줄 진단</h2>
+      <div id="diagnosis" class="section-gap"></div>
+    </div>
+
+    <div class="footer">
+      ※ 본 계산기는 가계 관리용 시뮬레이션입니다. 식비 포트폴리오 비율은 정부의 공식 권장기준이 아니며 가족 구성·지역·식사량·외식 습관에 따라 적정 금액은 달라질 수 있습니다. 연간 절감액은 같은 패턴이 12개월 반복된다는 단순 환산값입니다.
+    </div>
+  </section>
 </div>
-<div class="section-gap"><div class="muted tiny" style="margin-bottom:8px">이번 달 식비 목표 설정</div><div class="grid g2">
-<label class="radio-box"><input type="radio" name="budgetMethod" value="fixed"><span><strong>목표 직접 입력</strong><br><span class="muted tiny">이번 달 식비 한도를 직접 정합니다.</span></span></label>
-<label class="radio-box"><input type="radio" name="budgetMethod" value="auto"><span><strong>지난달 기준 자동 설정</strong><br><span class="muted tiny">지난달보다 몇 % 줄일지 정합니다.</span></span></label>
-</div></div>
-<div id="fixedWrap" class="section-gap hidden"><label>이번 달 목표 식비<input id="target" type="number" min="0" step="10000" placeholder="예: 1200000"><div id="targetHint" class="hint"></div></label><div class="top-actions" style="margin-bottom:0"><button type="button" class="budgetQuick" data-value="800000">80만</button><button type="button" class="budgetQuick" data-value="1000000">100만</button><button type="button" class="budgetQuick" data-value="1200000">120만</button><button type="button" class="budgetQuick" data-value="1500000">150만</button><button type="button" class="budgetQuick" data-value="2000000">200만</button></div></div>
-<div id="autoWrap" class="grid g2 section-gap hidden"><label>지난달 총 식비<input id="lastMonth" type="number" min="0" step="10000" placeholder="예: 1400000"><div id="lastHint" class="hint"></div></label><label>이번 달 절감 목표 <strong id="saveRateLabel">10%</strong><input id="saveRate" type="range" min="0" max="30" step="1" value="10"></label></div>
-</section>
-<section class="panel"><div class="row"><div><h2>2. 이번 달 지금까지 실제 지출</h2><p class="muted tiny section-gap">카드앱이나 가계부 기준으로 대략 입력해도 충분합니다.</p></div><div style="text-align:right"><div class="tiny muted">현재 자동합계</div><div id="currentTotal" style="font-weight:800">0원</div></div></div>
-<div class="grid g4 section-gap"><label>장보기·집밥<input id="grocery" type="number" min="0" step="1000" placeholder="0"><div id="groceryHint" class="hint"></div></label><label>배달<input id="delivery" type="number" min="0" step="1000" placeholder="0"><div id="deliveryHint" class="hint"></div></label><label>외식<input id="dining" type="number" min="0" step="1000" placeholder="0"><div id="diningHint" class="hint"></div></label><label>간식·커피<input id="snack" type="number" min="0" step="1000" placeholder="0"><div id="snackHint" class="hint"></div></label></div>
-<details class="section-gap"><summary><strong>배달·외식 횟수까지 계산하기</strong></summary><div class="grid g2 section-gap"><label>배달 1회 평균 결제액<input id="avgDelivery" type="number" min="0" step="1000" placeholder="예: 40000"><div id="avgDeliveryHint" class="hint"></div></label><label>가족 외식 1회 평균 결제액<input id="avgDining" type="number" min="0" step="1000" placeholder="예: 80000"><div id="avgDiningHint" class="hint"></div></label></div></details>
-</section>
-<section class="panel"><div class="row"><div><h2>3. 식비 포트폴리오</h2><p class="muted tiny section-gap">생활패턴에 맞게 항목별 예산을 자동 배분합니다.</p></div><select id="mode" style="max-width:230px"><option value="">선택</option><option value="save">절약형</option><option value="balance">균형형</option><option value="easy">편의형</option><option value="custom">직접 조정</option></select></div><div id="modeSummary" class="section-gap" style="font-weight:700"></div><div id="customWrap" class="grid g5 section-gap hidden"><label>장보기 %<input id="pGrocery" type="number" min="0" max="100"></label><label>배달 %<input id="pDelivery" type="number" min="0" max="100"></label><label>외식 %<input id="pDining" type="number" min="0" max="100"></label><label>간식 %<input id="pSnack" type="number" min="0" max="100"></label><label>예비비 %<input id="pReserve" type="number" min="0" max="100"></label></div><div id="customError" class="warn-text hidden"></div></section>
-<section class="panel"><h2>4. 절약 시뮬레이션</h2><p class="muted tiny section-gap">생활 만족도는 유지하면서 딱 몇 가지만 바꿨을 때 효과를 계산해봅니다.</p><div class="grid g3 section-gap"><label>배달 월 <strong id="cutDeliveryLabel">2회</strong> 줄이기<input id="cutDelivery" type="range" min="0" max="8" step="1" value="2"></label><label>외식 월 <strong id="cutDiningLabel">1회</strong> 줄이기<input id="cutDining" type="range" min="0" max="4" step="1" value="1"></label><label>장보기 낭비 <strong id="cutGroceryLabel">5%</strong> 줄이기<input id="cutGrocery" type="range" min="0" max="20" step="1" value="5"></label></div></section>
-</form>
-<section id="emptyState" class="panel"><strong>먼저 몇 가지만 입력해보세요.</strong><p class="muted tiny section-gap">가족 수, 목표 식비, 현재 지출 정도만 입력해도 핵심 결과를 볼 수 있습니다. 빠르게 체험하려면 ‘예시값 불러오기’를 눌러보세요.</p></section>
-<section id="resultArea" class="hidden">
-<div id="statusCard" class="panel status-good"><div class="row"><div><div class="tiny muted">이번 달 식비 페이스</div><div id="statusText" class="metric">-</div><div id="statusSub" class="muted tiny"></div></div><div style="text-align:right"><div class="tiny muted">월말 예상 식비</div><div id="forecast" class="metric">-</div><div id="forecastGap" class="tiny muted"></div></div></div><div class="bar"><div id="mainProgress" class="fill c1" style="width:0%"></div></div><div class="row tiny muted"><span id="spentLabel"></span><span id="targetLabel"></span></div></div>
-<div class="grid g5 section-gap"><div class="card"><div class="tiny muted">남은 식비</div><div id="remaining" class="metric">-</div></div><div class="card"><div class="tiny muted">남은 하루 한도</div><div id="daily" class="metric">-</div></div><div class="card"><div class="tiny muted">1인 하루 목표</div><div id="perPerson" class="metric">-</div></div><div class="card"><div class="tiny muted">현재 사용률</div><div id="usedRate" class="metric">-</div></div><div class="card"><div class="tiny muted">소득 대비 목표 식비</div><div id="incomeRatio" class="metric">-</div></div></div>
-<div class="grid g2 section-gap"><div class="card"><strong>🍱 앞으로 배달 가능 횟수</strong><div id="deliveryLeft" class="metric">-</div><div id="deliveryNote" class="tiny muted"></div></div><div class="card"><strong>🍽️ 앞으로 외식 가능 횟수</strong><div id="diningLeft" class="metric">-</div><div id="diningNote" class="tiny muted"></div></div></div>
-<div class="panel"><div class="row"><div><h2>카테고리별 자동 예산</h2><p class="tiny muted section-gap">현재 사용액과 이번 달 항목별 한도를 함께 보여줍니다.</p></div><div id="portfolioTotal" style="font-weight:700"></div></div><div id="portfolioRows" class="section-gap"></div></div>
-<div class="panel"><h2>이번 달 이렇게 해보세요</h2><div id="actions" class="grid g3 section-gap"></div></div>
-<div class="panel"><div class="row"><div><h2>절약 시뮬레이션 결과</h2><p class="tiny muted section-gap">선택한 행동을 한 달 동안 유지했을 때의 단순 추정치입니다.</p></div><div style="text-align:right"><div class="tiny muted">1년 예상 절감액</div><div id="annualSaving" class="metric">-</div></div></div><div class="grid g3 section-gap"><div class="card"><div class="tiny muted">한 달 예상 절감</div><div id="monthlySaving" class="metric">-</div></div><div class="card"><div class="tiny muted">절감 후 예상 식비</div><div id="afterSaving" class="metric">-</div></div><div class="card"><div class="tiny muted">현재 페이스의 연간 목표 차이</div><div id="paceAnnual" class="metric">-</div></div></div></div>
-<div class="panel"><h2>한눈에 보는 우리 집 식비 진단</h2><div id="diagnosis" class="section-gap"></div></div>
-<div class="footer-note">※ 본 계산기는 가계 관리용 시뮬레이션입니다. 가족 구성, 지역, 외식 습관, 식사량에 따라 적정 식비는 크게 달라질 수 있으며 포트폴리오 비율은 정부의 공식 권장기준이 아닙니다.</div>
-</section>
-</div>
+
 <script>
-(()=>{const $=id=>document.getElementById(id),qsa=s=>[...document.querySelectorAll(s)],money=n=>Math.round(Number.isFinite(n)?n:0).toLocaleString('ko-KR')+'원',man=n=>{if(!Number.isFinite(n)||n<=0)return'';const v=n/10000;return Number.isInteger(v)?v.toLocaleString('ko-KR')+'만원':v.toFixed(1)+'만원'},num=id=>{const el=$(id);if(!el||el.value==='')return 0;const v=Number(el.value);return Number.isFinite(v)?Math.max(0,v):0},has=id=>$(id)&&$(id).value!=='',clamp=(v,min,max)=>Math.min(max,Math.max(min,v));const now=new Date(),daysInMonth=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();$('today').max=daysInMonth;const presets={save:{grocery:65,delivery:12,dining:13,snack:7,reserve:3,label:'절약형 · 집밥 중심'},balance:{grocery:55,delivery:18,dining:15,snack:8,reserve:4,label:'균형형 · 집밥과 편의의 균형'},easy:{grocery:45,delivery:28,dining:15,snack:8,reserve:4,label:'편의형 · 맞벌이·시간절약 중심'}};
-function bm(){const r=document.querySelector('input[name="budgetMethod"]:checked');return r?r.value:''}function targetBudget(){const m=bm();if(m==='fixed')return num('target');if(m==='auto'&&has('lastMonth'))return num('lastMonth')*(1-num('saveRate')/100);return 0}function allocations(){const m=$('mode').value;if(presets[m])return presets[m];if(m==='custom')return{grocery:num('pGrocery'),delivery:num('pDelivery'),dining:num('pDining'),snack:num('pSnack'),reserve:num('pReserve'),label:'직접 조정'};return null}function updateHints(){[['income','incomeHint'],['target','targetHint'],['lastMonth','lastHint'],['grocery','groceryHint'],['delivery','deliveryHint'],['dining','diningHint'],['snack','snackHint'],['avgDelivery','avgDeliveryHint'],['avgDining','avgDiningHint']].forEach(([a,b])=>$(b).textContent=has(a)?man(num(a)):'');$('dayHint').textContent=has('today')?`${daysInMonth}일 중 ${Math.min(num('today'),daysInMonth)}일째 기준`:''}function syncVisibility(){const m=bm();$('fixedWrap').classList.toggle('hidden',m!=='fixed');$('autoWrap').classList.toggle('hidden',m!=='auto');$('customWrap').classList.toggle('hidden',$('mode').value!=='custom')}function clearAll(){qsa('input[type="number"]').forEach(el=>el.value='');qsa('input[type="radio"]').forEach(el=>el.checked=false);$('family').value='';$('mode').value='';$('saveRate').value='10';$('cutDelivery').value='2';$('cutDining').value='1';$('cutGrocery').value='5';recalc()}function loadSample(){$('family').value='4';$('income').value='5000000';$('today').value=String(Math.min(now.getDate(),daysInMonth));document.querySelector('input[name="budgetMethod"][value="fixed"]').checked=true;$('target').value='1200000';$('lastMonth').value='1400000';$('saveRate').value='10';$('grocery').value='360000';$('delivery').value='240000';$('dining').value='120000';$('snack').value='60000';$('avgDelivery').value='40000';$('avgDining').value='80000';$('mode').value='balance';$('pGrocery').value='55';$('pDelivery').value='18';$('pDining').value='15';$('pSnack').value='8';$('pReserve').value='4';$('cutDelivery').value='2';$('cutDining').value='1';$('cutGrocery').value='5';recalc()}function enough(){return targetBudget()>0&&has('today')&&(has('grocery')||has('delivery')||has('dining')||has('snack'))}
-function recalc(){syncVisibility();updateHints();$('saveRateLabel').textContent=num('saveRate')+'%';$('cutDeliveryLabel').textContent=num('cutDelivery')+'회';$('cutDiningLabel').textContent=num('cutDining')+'회';$('cutGroceryLabel').textContent=num('cutGrocery')+'%';const spent={grocery:num('grocery'),delivery:num('delivery'),dining:num('dining'),snack:num('snack')},total=spent.grocery+spent.delivery+spent.dining+spent.snack;$('currentTotal').textContent=money(total);const alloc=allocations();if(alloc){const pt=alloc.grocery+alloc.delivery+alloc.dining+alloc.snack+alloc.reserve,bad=$('mode').value==='custom'&&Math.abs(pt-100)>.01;$('customError').classList.toggle('hidden',!bad);$('customError').textContent=bad?`현재 합계 ${pt}%입니다. 합계를 100%로 맞춰주세요.`:'';$('modeSummary').textContent=bad?'':`${alloc.label} · 장보기 ${alloc.grocery}% / 배달 ${alloc.delivery}% / 외식 ${alloc.dining}% / 간식 ${alloc.snack}% / 예비비 ${alloc.reserve}%`}else{$('modeSummary').textContent='';$('customError').classList.add('hidden')}const ready=enough();$('emptyState').classList.toggle('hidden',ready);$('resultArea').classList.toggle('hidden',!ready);if(!ready)return;const target=targetBudget(),family=has('family')?Math.max(1,num('family')):1,day=clamp(num('today')||1,1,daysInMonth),remDays=Math.max(1,daysInMonth-day+1),remain=target-total,forecast=total/day*daysInMonth,elapsed=day/daysInMonth,pace=total/Math.max(1,target*elapsed),income=num('income'),safeAlloc=alloc&&Math.abs((alloc.grocery+alloc.delivery+alloc.dining+alloc.snack+alloc.reserve)-100)<.01?alloc:presets.balance,budgets={grocery:target*safeAlloc.grocery/100,delivery:target*safeAlloc.delivery/100,dining:target*safeAlloc.dining/100,snack:target*safeAlloc.snack/100,reserve:target*safeAlloc.reserve/100},avgDel=num('avgDelivery'),avgDin=num('avgDining'),delRoom=Math.max(0,budgets.delivery-spent.delivery),dinRoom=Math.max(0,budgets.dining-spent.dining),delOrders=avgDel>0?Math.floor(delRoom/avgDel):null,dinOrders=avgDin>0?Math.floor(dinRoom/avgDin):null;let status='적정 페이스',sub='현재 속도라면 목표 근처에서 마무리할 가능성이 높아요.',cls='status-good';if(pace<.88){status='여유 있게 관리 중';sub='현재 식비 속도는 목표보다 여유가 있어요.'}else if(pace>1.22){status='지출 속도가 많이 빠릅니다';sub='이 속도가 이어지면 목표를 크게 넘길 수 있어요.';cls='status-bad'}else if(pace>1.05){status='조금 빠른 편입니다';sub='아직 조절 가능합니다. 이번 주 지출만 조금 낮춰보세요.';cls='status-warn'}$('statusCard').className='panel '+cls;$('statusText').textContent=status;$('statusSub').textContent=sub;$('forecast').textContent=money(forecast);const fg=forecast-target;$('forecastGap').textContent=fg>0?`목표보다 약 ${money(fg)} 초과 예상`:`목표보다 약 ${money(Math.abs(fg))} 여유 예상`;$('remaining').textContent=remain>=0?money(remain):'초과 '+money(Math.abs(remain));$('daily').textContent=remain>0?money(remain/remDays):'0원';$('perPerson').textContent=money(target/family/daysInMonth);$('usedRate').textContent=(total/target*100).toFixed(0)+'%';$('incomeRatio').textContent=income>0?(target/income*100).toFixed(1)+'%':'미입력';$('spentLabel').textContent='현재 '+money(total);$('targetLabel').textContent='목표 '+money(target);$('mainProgress').style.width=clamp(total/target*100,0,100)+'%';$('deliveryLeft').textContent=delOrders===null?'평균금액 입력 필요':delOrders+'회';$('deliveryNote').textContent=delOrders===null?`남은 배달예산 ${money(delRoom)}`:`남은 배달예산 ${money(delRoom)} · 1회 ${money(avgDel)} 기준`;$('diningLeft').textContent=dinOrders===null?'평균금액 입력 필요':dinOrders+'회';$('diningNote').textContent=dinOrders===null?`남은 외식예산 ${money(dinRoom)}`:`남은 외식예산 ${money(dinRoom)} · 1회 ${money(avgDin)} 기준`;$('portfolioTotal').textContent='목표 '+money(target);const rows=[['grocery','장보기·집밥','c1'],['delivery','배달','c2'],['dining','외식','c3'],['snack','간식·커피','c4'],['reserve','예비비','c5']];$('portfolioRows').innerHTML=rows.map(([k,label,c])=>{const used=k==='reserve'?0:spent[k],b=budgets[k],left=b-used,pct=clamp(used/Math.max(1,b)*100,0,100);return`<div style="margin-bottom:14px"><div class="row tiny"><strong>${label}</strong><span>${money(used)} / ${money(b)}</span></div><div class="bar"><div class="fill ${c}" style="width:${pct}%"></div></div><div class="tiny muted">${left>=0?'남음 '+money(left):'초과 '+money(Math.abs(left))}</div></div>`}).join('');const paces={};['grocery','delivery','dining','snack'].forEach(k=>paces[k]=spent[k]/Math.max(1,budgets[k]*elapsed));const worst=Object.entries(paces).sort((a,b)=>b[1]-a[1])[0][0],names={grocery:'장보기',delivery:'배달',dining:'외식',snack:'간식·커피'},actions=[`${names[worst]} 지출 속도가 현재 가장 빠릅니다. 이 항목 하나만 먼저 관리해도 전체 식비 조절 효과가 가장 큽니다.`,remain>0?`남은 ${remDays}일 동안 하루 평균 ${money(remain/remDays)} 안에서 사용하면 현재 목표를 맞출 수 있습니다.`:`이미 목표를 ${money(Math.abs(remain))} 초과했습니다. 다음 달 목표를 실제 소비패턴에 맞춰 재설정해보세요.`,forecast>target?`현재 페이스라면 월말에 약 ${money(forecast-target)} 초과할 전망입니다.`:`현재 페이스를 유지하면 약 ${money(target-forecast)}의 여유가 생길 전망입니다.`];$('actions').innerHTML=actions.map((t,i)=>`<div class="card"><span class="badge">ACTION ${i+1}</span><p style="margin-top:8px">${t}</p></div>`).join('');const monthlySaving=num('cutDelivery')*avgDel+num('cutDining')*avgDin+budgets.grocery*num('cutGrocery')/100;$('monthlySaving').textContent=money(monthlySaving);$('annualSaving').textContent=money(monthlySaving*12);$('afterSaving').textContent=money(Math.max(0,forecast-monthlySaving));const paceAnnual=(forecast-target)*12;$('paceAnnual').textContent=paceAnnual>0?'초과 '+money(paceAnnual):'절약 '+money(Math.abs(paceAnnual));const dominant=Object.entries(spent).sort((a,b)=>b[1]-a[1])[0],share=total>0?dominant[1]/total*100:0;$('diagnosis').innerHTML=`<p><strong>현재 가장 큰 지출은 ${names[dominant[0]]}</strong>이며 전체 식비의 약 <strong>${share.toFixed(0)}%</strong>입니다.</p><p style="margin-top:8px">이달 목표는 <strong>${money(target)}</strong>, 현재 월말 예상은 <strong>${money(forecast)}</strong>입니다.</p><p style="margin-top:8px">모든 항목을 동시에 줄이기보다 <strong>${names[worst]}부터 먼저 조절하는 것</strong>이 효과적입니다.</p>`}
-qsa('input,select').forEach(el=>{el.addEventListener('input',recalc);el.addEventListener('change',recalc)});qsa('.budgetQuick').forEach(btn=>btn.addEventListener('click',()=>{document.querySelector('input[name="budgetMethod"][value="fixed"]').checked=true;$('target').value=btn.dataset.value;recalc()}));$('sampleBtn').addEventListener('click',loadSample);$('clearBtn').addEventListener('click',clearAll);$('calcForm').addEventListener('submit',e=>e.preventDefault());clearAll()})();
+(()=>{
+const $=id=>document.getElementById(id);
+const qsa=s=>[...document.querySelectorAll(s)];
+const money=n=>Math.round(Number.isFinite(n)?n:0).toLocaleString('ko-KR')+'원';
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+
+const now=new Date();
+const daysInMonth=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+const currentDay=now.getDate();
+$('baseDateText').textContent=`${now.getMonth()+1}월 ${currentDay}일 기준`;
+$('baseDateSub').textContent=`이번 달 ${daysInMonth}일 중 ${currentDay}일째`;
+
+const moneyIds=['income','target','lastMonth','grocery','delivery','dining','snack','avgDelivery','avgDining'];
+const monthlyIds=new Set(['income','target','lastMonth','grocery','delivery','dining','snack']);
+const microIds=new Set(['avgDelivery','avgDining']);
+
+const presets={
+  save:{grocery:65,delivery:12,dining:13,snack:7,reserve:3,label:'절약형 · 집밥 중심'},
+  balance:{grocery:55,delivery:18,dining:15,snack:8,reserve:4,label:'균형형 · 집밥과 편의의 균형'},
+  easy:{grocery:45,delivery:28,dining:15,snack:8,reserve:4,label:'편의형 · 시간 절약 비중 확대'}
+};
+
+const categoryLabels={grocery:'장보기·집밥',delivery:'배달',dining:'외식',snack:'간식·커피'};
+const adjustWeight={delivery:1,snack:.88,dining:.82,grocery:.55};
+const adjustAdvice={
+  delivery:'주문 횟수만 줄여도 절감액이 바로 보이는 항목입니다. 배달 대체 메뉴를 1~2개 준비해두면 실행하기 쉽습니다.',
+  snack:'완전히 끊기보다 주간 한도를 정하는 방식이 오래갑니다. 커피·간식 결제를 따로 보면 새는 돈이 잘 보입니다.',
+  dining:'가족 만족도가 높은 외식은 남기고, 습관적으로 잡힌 외식부터 줄이는 게 현실적입니다.',
+  grocery:'싸게 사는 것보다 버리는 식재료를 줄이는 게 먼저입니다. 냉장고 재고 확인 후 장보기가 효과적입니다.'
+};
+
+function parseSmart(id,raw){
+  if(raw==null)return {value:0,valid:false,empty:true};
+  const original=String(raw).trim();
+  if(!original)return {value:0,valid:false,empty:true};
+  if(original.includes('-'))return {value:0,valid:false,error:'음수 금액은 입력할 수 없습니다.'};
+
+  let s=original.replace(/\s/g,'').replace(/,/g,'');
+  if(!/^[0-9.]+(?:만원|만|원)?$/.test(s))return {value:0,valid:false,error:'숫자, 쉼표, 원/만원만 입력할 수 있습니다.'};
+
+  const hasMan=s.endsWith('만원')||s.endsWith('만');
+  const hasWon=!hasMan&&s.endsWith('원');
+  let cleaned=s.replace(/만원$/,'').replace(/만$/,'').replace(/원$/,'');
+
+  if((cleaned.match(/\./g)||[]).length>1)return {value:0,valid:false,error:'소수점 형식을 확인해주세요.'};
+  const n=Number(cleaned);
+  if(!Number.isFinite(n)||n<0)return {value:0,valid:false,error:'금액을 다시 확인해주세요.'};
+
+  if(hasMan)return {value:n*10000,valid:true,mode:'만원 명시',source:n};
+  if(hasWon)return {value:n,valid:true,mode:'원 명시',source:n};
+
+  if(microIds.has(id)){
+    if(n<=99)return {value:n*10000,valid:true,mode:'만원 자동',source:n,note:'1회 결제금액'};
+    if(n>=10000)return {value:n,valid:true,mode:'원 자동',source:n,note:'1회 결제금액'};
+    return {value:0,valid:false,ambiguous:true,source:n,error:'단위가 애매합니다.'};
+  }
+
+  if(n<=999)return {value:n*10000,valid:true,mode:'만원 자동',source:n};
+  if(n>=10000)return {value:n,valid:true,mode:'원 자동',source:n};
+
+  if(monthlyIds.has(id)){
+    return {value:0,valid:false,ambiguous:true,source:n,error:'단위가 애매합니다.'};
+  }
+  return {value:n,valid:true,mode:'원 자동',source:n};
+}
+
+function value(id){
+  const p=parseSmart(id,$(id).value);
+  return p.valid?p.value:0;
+}
+
+function hint(id){
+  const box=$(id+'Hint');
+  if(!box)return;
+  const p=parseSmart(id,$(id).value);
+  box.classList.remove('error');
+
+  if(p.empty){box.innerHTML='';return;}
+  if(p.valid){
+    box.innerHTML=`→ 실제 계산금액 <strong>${money(p.value)}</strong> <span class="unit-chip">${p.mode}</span>${p.note?` <span class="muted">(${p.note})</span>`:''}`;
+    return;
+  }
+
+  box.classList.add('error');
+  if(p.ambiguous){
+    box.innerHTML=`${p.source.toLocaleString('ko-KR')}은 원/만원 모두 가능해요.<br>
+      <button type="button" class="mini-btn resolve" data-id="${id}" data-value="${p.source}원">${p.source.toLocaleString('ko-KR')}원</button>
+      <button type="button" class="mini-btn resolve" data-id="${id}" data-value="${p.source}만원">${p.source.toLocaleString('ko-KR')}만원</button>`;
+  }else{
+    box.textContent=p.error||'금액을 다시 확인해주세요.';
+  }
+}
+
+function budgetMethod(){
+  const r=document.querySelector('input[name="budgetMethod"]:checked');
+  return r?r.value:'';
+}
+
+function targetBudget(){
+  const m=budgetMethod();
+  if(m==='fixed')return value('target');
+  if(m==='auto'){
+    const last=value('lastMonth');
+    if(last<=0)return 0;
+    return last*(1-Number($('saveRate').value)/100);
+  }
+  return 0;
+}
+
+function allocation(){
+  const mode=$('mode').value;
+  if(presets[mode])return presets[mode];
+
+  const a={
+    grocery:Number($('pGrocery').value)||0,
+    delivery:Number($('pDelivery').value)||0,
+    dining:Number($('pDining').value)||0,
+    snack:Number($('pSnack').value)||0,
+    reserve:Number($('pReserve').value)||0,
+    label:'직접 조정'
+  };
+  return a;
+}
+
+function syncVisibility(){
+  const m=budgetMethod();
+  $('fixedWrap').classList.toggle('hidden',m!=='fixed');
+  $('autoWrap').classList.toggle('hidden',m!=='auto');
+  $('customWrap').classList.toggle('hidden',$('mode').value!=='custom');
+}
+
+function updateProgress(){
+  const filled=moneyIds.filter(id=>String($(id).value).trim()).length;
+  const invalid=moneyIds.filter(id=>{
+    const raw=String($(id).value).trim();
+    return raw&&!parseSmart(id,raw).valid;
+  }).length;
+  $('inputProgress').textContent=`금액 입력 ${filled}개${invalid?` · 확인 필요 ${invalid}개`:''}`;
+}
+
+function clearAll(){
+  moneyIds.forEach(id=>$(id).value='');
+  $('family').value='';
+  qsa('input[name="budgetMethod"]').forEach(x=>x.checked=false);
+  $('saveRate').value='10';
+  $('mode').value='balance';
+  $('pGrocery').value='55';$('pDelivery').value='18';$('pDining').value='15';$('pSnack').value='8';$('pReserve').value='4';
+  $('cutDelivery').value='0';$('cutDining').value='0';$('cutGrocery').value='0';$('cutSnack').value='0';
+  qsa('.targetPreset,.simPreset').forEach(b=>b.setAttribute('aria-pressed','false'));
+  recalc();
+}
+
+function loadSample(){
+  $('family').value='4';
+  $('income').value='500';
+  document.querySelector('input[name="budgetMethod"][value="fixed"]').checked=true;
+  $('target').value='120';
+  $('lastMonth').value='140';
+  $('saveRate').value='10';
+
+  // 예시 지출은 현재 날짜에 비례해 자동 조정해 월초/월말 모두 자연스럽게 보이도록 함.
+  const targetWon=1200000;
+  const r=currentDay/daysInMonth;
+  const toMan=n=>(Math.round((n/10000)*10)/10).toString();
+  $('grocery').value=toMan(targetWon*.55*r*1.05);
+  $('delivery').value=toMan(targetWon*.18*r*1.30);
+  $('dining').value=toMan(targetWon*.15*r*1.10);
+  $('snack').value=toMan(targetWon*.08*r*1.15);
+  $('avgDelivery').value='4';
+  $('avgDining').value='8';
+
+  $('mode').value='balance';
+  $('pGrocery').value='55';$('pDelivery').value='18';$('pDining').value='15';$('pSnack').value='8';$('pReserve').value='4';
+
+  $('cutDelivery').value='0';
+  $('cutDining').value='0';
+  $('cutGrocery').value='0';
+  $('cutSnack').value='0';
+  qsa('.simPreset').forEach(b=>b.setAttribute('aria-pressed','false'));
+  recalc();
+}
+
+function statusFor(forecast,target){
+  const ratio=forecast/Math.max(1,target);
+  if(ratio<=.9)return ['여유 있게 관리 중','현재 페이스라면 목표보다 여유 있게 마무리할 가능성이 높습니다.','good'];
+  if(ratio<=1.03)return ['목표 근처입니다','지금 페이스를 크게 흔들지 않으면 목표선 근처에서 마무리할 수 있습니다.','good'];
+  if(ratio<=1.15)return ['조금 빠른 편입니다','아직 충분히 조절 가능합니다. 가장 빠른 항목 하나부터 낮춰보세요.','warn'];
+  return ['지출 속도가 많이 빠릅니다','현재 페이스가 이어지면 목표를 꽤 넘길 수 있습니다. 배달·외식·간식 중 조절 가능한 항목부터 확인해보세요.','bad'];
+}
+
+function recalc(){
+  syncVisibility();
+  moneyIds.forEach(hint);
+  updateProgress();
+
+  $('saveRateLabel').textContent=$('saveRate').value+'%';
+  $('cutDeliveryLabel').textContent=$('cutDelivery').value+'회';
+  $('cutDiningLabel').textContent=$('cutDining').value+'회';
+  $('cutGroceryLabel').textContent=$('cutGrocery').value+'%';
+  $('cutSnackLabel').textContent=$('cutSnack').value+'%';
+
+  const target=targetBudget();
+  if(budgetMethod()==='auto'&&value('lastMonth')>0){
+    $('autoTargetPreview').innerHTML=`→ 자동 목표 식비 <strong>${money(target)}</strong>`;
+  }else{
+    $('autoTargetPreview').innerHTML='';
+  }
+
+  const spent={
+    grocery:value('grocery'),
+    delivery:value('delivery'),
+    dining:value('dining'),
+    snack:value('snack')
+  };
+  const totalSpent=spent.grocery+spent.delivery+spent.dining+spent.snack;
+  $('currentTotal').textContent=money(totalSpent);
+
+  const a=allocation();
+  const pctTotal=a.grocery+a.delivery+a.dining+a.snack+a.reserve;
+  const customBad=$('mode').value==='custom'&&Math.abs(pctTotal-100)>.01;
+  $('customError').classList.toggle('hidden',!customBad);
+  $('customError').textContent=customBad?`직접 조정 비율의 합이 ${pctTotal}%입니다. 합계를 100%로 맞춰주세요.`:'';
+  $('modeSummary').textContent=customBad?'':`${a.label} · 장보기 ${a.grocery}% / 배달 ${a.delivery}% / 외식 ${a.dining}% / 간식 ${a.snack}% / 예비비 ${a.reserve}%`;
+
+  const invalid=moneyIds.some(id=>{
+    const raw=String($(id).value).trim();
+    return raw&&!parseSmart(id,raw).valid;
+  });
+  const ready=target>0&&totalSpent>=0&&!invalid&&(String($('grocery').value).trim()||String($('delivery').value).trim()||String($('dining').value).trim()||String($('snack').value).trim())&&!customBad;
+
+  $('emptyState').classList.toggle('hidden',ready);
+  $('resultArea').classList.toggle('hidden',!ready);
+  $('liveSimulation').classList.toggle('hidden',!ready);
+  $('autoPlan').classList.toggle('hidden',!ready);
+  if(!ready)return;
+
+  const family=Number($('family').value)||0;
+  const income=value('income');
+  const elapsed=Math.max(1,currentDay);
+  const remainingDays=Math.max(0,daysInMonth-currentDay);
+  const remaining=target-totalSpent;
+
+  const forecastByCat={
+    grocery:spent.grocery/elapsed*daysInMonth,
+    delivery:spent.delivery/elapsed*daysInMonth,
+    dining:spent.dining/elapsed*daysInMonth,
+    snack:spent.snack/elapsed*daysInMonth
+  };
+  const forecast=forecastByCat.grocery+forecastByCat.delivery+forecastByCat.dining+forecastByCat.snack;
+
+  const budgets={
+    grocery:target*a.grocery/100,
+    delivery:target*a.delivery/100,
+    dining:target*a.dining/100,
+    snack:target*a.snack/100,
+    reserve:target*a.reserve/100
+  };
+
+  const [status,sub,statusClass]=statusFor(forecast,target);
+  $('statusCard').className='panel '+statusClass;
+  $('statusText').textContent=status;
+  const reliability=currentDay<=7?' 월초라 월말 예상치는 아직 변동이 클 수 있습니다.':(currentDay<=14?' 아직 월 중반 전이라 예상치는 다소 달라질 수 있습니다.':'');
+  $('statusSub').textContent=sub+reliability;
+  $('forecast').textContent=money(forecast);
+  $('forecastGap').textContent=forecast>target?`목표보다 약 ${money(forecast-target)} 초과 예상`:`목표보다 약 ${money(target-forecast)} 여유 예상`;
+
+  $('currentSpentMetric').textContent=money(totalSpent);
+  $('remaining').textContent=remaining>=0?money(remaining):'초과 '+money(Math.abs(remaining));
+  $('daily').textContent=remaining>0&&remainingDays>0?money(remaining/remainingDays):(remaining>0?'오늘이 말일':'0원');
+  $('perPerson').textContent=family?money(target/family/daysInMonth):'가족 수 입력';
+  $('incomeRatio').textContent=income>0?(target/income*100).toFixed(1)+'%':'미입력';
+  $('spentLabel').textContent=`현재 ${money(totalSpent)} · ${daysInMonth}일 중 ${currentDay}일째`;
+  $('targetLabel').textContent='목표 '+money(target);
+  $('mainProgress').style.width=clamp(totalSpent/target*100,0,100)+'%';
+
+  const avgDel=value('avgDelivery');
+  const avgDin=value('avgDining');
+  const deliveryRoom=Math.max(0,budgets.delivery-spent.delivery);
+  const diningRoom=Math.max(0,budgets.dining-spent.dining);
+  const deliveryLeft=avgDel>0?Math.floor(deliveryRoom/avgDel):null;
+  const diningLeft=avgDin>0?Math.floor(diningRoom/avgDin):null;
+
+  $('deliveryLeft').textContent=deliveryLeft===null?'평균금액 입력 필요':deliveryLeft+'회';
+  $('deliveryNote').textContent=deliveryLeft===null?`남은 배달 예산 ${money(deliveryRoom)}`:`남은 배달 예산 ${money(deliveryRoom)} · 1회 ${money(avgDel)} 기준`;
+  $('diningLeft').textContent=diningLeft===null?'평균금액 입력 필요':diningLeft+'회';
+  $('diningNote').textContent=diningLeft===null?`남은 외식 예산 ${money(diningRoom)}`:`남은 외식 예산 ${money(diningRoom)} · 1회 ${money(avgDin)} 기준`;
+
+  const weekly=remaining>0&&remainingDays>0?remaining/remainingDays*Math.min(7,remainingDays):0;
+  $('weeklyLimit').textContent=money(weekly);
+  $('weeklyNote').textContent=remaining>0?(remainingDays>0?`앞으로 ${Math.min(7,remainingDays)}일 기준`:'오늘이 이번 달 마지막 날입니다.'):'이미 목표 예산을 넘었습니다.';
+
+  $('portfolioTotal').textContent='목표 '+money(target);
+  const rows=[
+    ['grocery','장보기·집밥','c1'],
+    ['delivery','배달','c2'],
+    ['dining','외식','c3'],
+    ['snack','간식·커피','c4'],
+    ['reserve','예비비','c5']
+  ];
+
+  $('portfolioRows').innerHTML=rows.map(([key,label,color])=>{
+    const used=key==='reserve'?0:spent[key];
+    const budget=budgets[key];
+    const left=budget-used;
+    const usePct=used/Math.max(1,budget)*100;
+    const expectedByToday=budget*(currentDay/daysInMonth);
+    const pace=key==='reserve'?0:used/Math.max(1,expectedByToday);
+    let paceText='예비비';
+    if(key!=='reserve'){
+      if(pace<=.9)paceText='현재 속도 여유';
+      else if(pace<=1.1)paceText='현재 속도 적정';
+      else paceText='현재 속도 빠름';
+    }
+    return `<div style="margin-bottom:14px">
+      <div class="row tiny"><strong>${label}</strong><span>${money(used)} / ${money(budget)}</span></div>
+      <div class="bar"><div class="fill ${color}" style="width:${clamp(usePct,0,100)}%"></div></div>
+      <div class="row tiny muted"><span>${left>=0?'남음 '+money(left):'초과 '+money(Math.abs(left))}</span><span>${paceText}</span></div>
+    </div>`;
+  }).join('');
+
+  const adjustCandidates=['grocery','delivery','dining','snack'].map(id=>{
+    const budget=budgets[id];
+    const expected=budget*(currentDay/daysInMonth);
+    const pace=spent[id]/Math.max(1,expected);
+    const pressure=Math.max(0,pace-1);
+    const size=spent[id]/Math.max(1,totalSpent);
+    const score=(pressure*2+size)*(adjustWeight[id]||.5);
+    return {id,score,pace,value:spent[id]};
+  }).sort((x,y)=>y.score-x.score);
+
+  $('adjustRanks').innerHTML=adjustCandidates.slice(0,3).map((x,i)=>`
+    <div class="card rank">
+      <div class="rank-num">${i+1}</div>
+      <div>
+        <strong>${categoryLabels[x.id]}</strong>
+        <div class="tiny muted" style="margin-top:4px">현재 ${money(x.value)} · 목표 속도의 ${(x.pace*100).toFixed(0)}%</div>
+        <p class="tiny muted" style="margin-top:7px">${adjustAdvice[x.id]}</p>
+      </div>
+    </div>
+  `).join('');
+
+  const worst=adjustCandidates[0];
+  const actions=[
+    `${categoryLabels[worst.id]}부터 확인해보세요. 현재 목표 속도 대비 ${(worst.pace*100).toFixed(0)}% 수준으로 가장 먼저 점검할 가치가 있습니다.`,
+    remaining>0?(remainingDays>0?`남은 ${remainingDays}일 동안 하루 평균 ${money(remaining/remainingDays)} 안에서 쓰면 이번 달 목표를 맞출 수 있습니다.`:`오늘이 말일입니다. 현재 남은 예산은 ${money(remaining)}입니다.`):`현재까지 목표를 ${money(Math.abs(remaining))} 넘었습니다. 남은 기간에는 새 지출보다 이미 있는 식재료 활용부터 보는 게 좋습니다.`,
+    forecast>target?`현재 속도가 이어지면 월말에 약 ${money(forecast-target)} 초과할 전망입니다. 아래 시뮬레이션에서 이 금액 이상 줄어드는 조합을 찾아보세요.`:`현재 페이스라면 목표보다 약 ${money(target-forecast)} 여유가 예상됩니다. 남은 예산을 굳이 다 쓸 필요는 없습니다.`
+  ];
+  $('actions').innerHTML=actions.map((t,i)=>`<div class="card"><span class="badge">ACTION ${i+1}</span><p style="margin-top:8px">${t}</p></div>`).join('');
+
+  // 목표 초과 예상 시, 현재 입력값 안에서 비교적 현실적인 절감 조합을 자동 탐색.
+  const targetGap=Math.max(0,forecast-target);
+  let recommendedPlan=null;
+
+  function buildAutoPlan(){
+    if(targetGap<=0)return null;
+
+    const maxD=avgDel>0?Math.min(8,Math.max(0,Math.round(forecastByCat.delivery/avgDel))):0;
+    const maxO=avgDin>0?Math.min(4,Math.max(0,Math.round(forecastByCat.dining/avgDin))):0;
+    const gs=[0,3,5,8,10,15,20];
+    const ss=[0,5,10,15,20,25,30];
+
+    let bestHit=null;
+    let bestFallback=null;
+
+    for(let d=0;d<=maxD;d++){
+      for(let o=0;o<=maxO;o++){
+        for(const g of gs){
+          for(const s of ss){
+            const delSave=Math.min(forecastByCat.delivery,d*avgDel);
+            const dinSave=Math.min(forecastByCat.dining,o*avgDin);
+            const groSave=forecastByCat.grocery*g/100;
+            const snaSave=forecastByCat.snack*s/100;
+            const save=delSave+dinSave+groSave+snaSave;
+
+            // 가족 외식 감축은 상대적으로 부담이 크고, 소액 습관/배달/장보기 조절은 조금 낮게 평가.
+            const effort=d*1.15+o*1.8+(g/5)*.75+(s/5)*.55;
+            const overshoot=Math.max(0,save-targetGap);
+            const candidate={d,o,g,s,save,effort,overshoot};
+
+            if(!bestFallback || save>bestFallback.save || (Math.abs(save-bestFallback.save)<1 && effort<bestFallback.effort)){
+              bestFallback=candidate;
+            }
+            if(save>=targetGap){
+              if(!bestHit || effort<bestHit.effort || (Math.abs(effort-bestHit.effort)<.001 && overshoot<bestHit.overshoot)){
+                bestHit=candidate;
+              }
+            }
+          }
+        }
+      }
+    }
+    return bestHit||bestFallback;
+  }
+
+  recommendedPlan=buildAutoPlan();
+  $('autoPlan').classList.remove('hidden');
+
+  if(targetGap<=0){
+    $('autoPlanTitle').textContent='현재 페이스는 이미 목표 범위입니다';
+    $('autoPlanText').textContent='추가 절감이 꼭 필요하지 않습니다. 생활 만족도를 낮추면서 억지로 예산을 다 줄일 필요는 없습니다.';
+    $('applyAutoPlan').classList.add('hidden');
+    $('applyAutoPlan').dataset.plan='';
+  }else if(recommendedPlan){
+    const parts=[];
+    if(recommendedPlan.d)parts.push(`배달 ${recommendedPlan.d}회`);
+    if(recommendedPlan.o)parts.push(`외식 ${recommendedPlan.o}회`);
+    if(recommendedPlan.g)parts.push(`장보기 ${recommendedPlan.g}%`);
+    if(recommendedPlan.s)parts.push(`간식·커피 ${recommendedPlan.s}%`);
+
+    $('autoPlanTitle').textContent=parts.length?parts.join(' + ')+' 조정':'현재 입력만으로 추천 조합 계산이 어렵습니다';
+    const left=Math.max(0,targetGap-recommendedPlan.save);
+    $('autoPlanText').textContent=left>0
+      ? `이 조합으로 월 약 ${money(recommendedPlan.save)}을 줄일 수 있지만 목표까지 약 ${money(left)}이 더 필요합니다. 배달·외식 평균금액을 입력하면 추천 정확도가 더 좋아집니다.`
+      : `현재 페이스 기준 목표 초과 예상액 ${money(targetGap)}을 맞추기 위한 비교적 부담이 적은 조합입니다. 예상 절감액은 약 ${money(recommendedPlan.save)}입니다.`;
+    $('applyAutoPlan').classList.toggle('hidden',parts.length===0);
+    $('applyAutoPlan').dataset.plan=JSON.stringify(recommendedPlan);
+  }else{
+    $('autoPlanTitle').textContent='추천 조합을 만들기 위한 정보가 부족합니다';
+    $('autoPlanText').textContent='배달·외식 1회 평균금액을 입력하면 횟수 조정까지 포함해 계산할 수 있습니다.';
+    $('applyAutoPlan').classList.add('hidden');
+    $('applyAutoPlan').dataset.plan='';
+  }
+
+  // 실시간 절약 시뮬레이션
+  const requestedDeliveryCuts=Number($('cutDelivery').value);
+  const requestedDiningCuts=Number($('cutDining').value);
+  const groceryCutRate=Number($('cutGrocery').value)/100;
+  const snackCutRate=Number($('cutSnack').value)/100;
+
+  const projectedDeliveryOrders=avgDel>0?Math.max(0,Math.round(forecastByCat.delivery/avgDel)):null;
+  const projectedDiningOrders=avgDin>0?Math.max(0,Math.round(forecastByCat.dining/avgDin)):null;
+
+  const appliedDeliveryCuts=avgDel>0?Math.min(requestedDeliveryCuts,projectedDeliveryOrders):0;
+  const appliedDiningCuts=avgDin>0?Math.min(requestedDiningCuts,projectedDiningOrders):0;
+
+  const simulated={
+    grocery:Math.max(0,forecastByCat.grocery*(1-groceryCutRate)),
+    delivery:Math.max(0,forecastByCat.delivery-appliedDeliveryCuts*avgDel),
+    dining:Math.max(0,forecastByCat.dining-appliedDiningCuts*avgDin),
+    snack:Math.max(0,forecastByCat.snack*(1-snackCutRate))
+  };
+  const afterForecast=simulated.grocery+simulated.delivery+simulated.dining+simulated.snack;
+  const monthlySaving=Math.max(0,forecast-afterForecast);
+  const beforeGap=target-forecast;
+  const afterGap=target-afterForecast;
+  const needMore=Math.max(0,afterForecast-target);
+
+  const notes=[];
+  if(requestedDeliveryCuts>0&&avgDel<=0)notes.push('배달 횟수 절감은 1회 평균 결제액을 입력해야 반영됩니다.');
+  if(requestedDiningCuts>0&&avgDin<=0)notes.push('외식 횟수 절감은 1회 평균 결제액을 입력해야 반영됩니다.');
+  if(avgDel>0&&requestedDeliveryCuts>appliedDeliveryCuts)notes.push(`배달은 월말 예상 주문량 약 ${projectedDeliveryOrders}회 범위까지만 반영했습니다.`);
+  if(avgDin>0&&requestedDiningCuts>appliedDiningCuts)notes.push(`외식은 월말 예상 횟수 약 ${projectedDiningOrders}회 범위까지만 반영했습니다.`);
+  $('simulationNote').textContent=notes.length?notes.join(' '):'선택한 절약 조건이 월말 예상치에 즉시 반영됩니다.';
+
+  $('liveSavingBadge').textContent='월 '+money(monthlySaving)+' 절감';
+  $('liveBeforeForecast').textContent=money(forecast);
+  $('liveAfterForecast').textContent=money(afterForecast);
+  $('liveGrocery').textContent=money(simulated.grocery);
+  $('liveDelivery').textContent=money(simulated.delivery);
+  $('liveDining').textContent=money(simulated.dining);
+  $('liveSnack').textContent=money(simulated.snack);
+
+  $('liveBeforeGap').textContent=beforeGap>=0?'여유 '+money(beforeGap):'초과 '+money(Math.abs(beforeGap));
+  $('liveAfterGap').textContent=afterGap>=0?'여유 '+money(afterGap):'초과 '+money(Math.abs(afterGap));
+  $('liveAfterGap').className='compare-value '+(afterGap>=0?'sim-good':'sim-bad');
+
+  $('monthlySaving').textContent=money(monthlySaving);
+  $('annualSaving').textContent=money(monthlySaving*12);
+  $('afterSaving').textContent=money(afterForecast);
+  $('afterTargetGap').textContent=afterGap>=0?'여유 '+money(afterGap):'초과 '+money(Math.abs(afterGap));
+  $('needMoreSaving').textContent=needMore>0?money(needMore):'목표 달성권';
+
+  const dominant=Object.entries(spent).sort((x,y)=>y[1]-x[1])[0];
+  const dominantShare=totalSpent>0?dominant[1]/totalSpent*100:0;
+  const afterStatus=statusFor(afterForecast,target)[0];
+
+  $('diagnosis').innerHTML=`
+    <p>현재까지 가장 큰 지출은 <strong>${categoryLabels[dominant[0]]}</strong>이고, 현재 식비의 약 <strong>${dominantShare.toFixed(0)}%</strong>입니다.</p>
+    <p style="margin-top:8px">지금 속도가 유지되면 월말 식비는 약 <strong>${money(forecast)}</strong>으로 예상됩니다. 목표는 <strong>${money(target)}</strong>입니다.</p>
+    <p style="margin-top:8px">현재 절약 시뮬레이션을 적용하면 약 <strong>${money(afterForecast)}</strong>으로 내려가며, 진단은 <strong>${afterStatus}</strong>입니다.${needMore>0?` 목표를 맞추려면 추가로 약 <strong>${money(needMore)}</strong>을 더 조정해야 합니다.`:' 현재 설정만으로 목표 범위에 들어옵니다.'}</p>
+  `;
+}
+
+qsa('.smart-money').forEach(el=>{
+  el.addEventListener('input',recalc);
+  el.addEventListener('blur',recalc);
+});
+qsa('select,input[type="range"],input[type="number"],input[name="budgetMethod"]').forEach(el=>{
+  el.addEventListener('input',recalc);
+  el.addEventListener('change',recalc);
+});
+
+document.addEventListener('click',e=>{
+  const resolve=e.target.closest('.resolve');
+  if(resolve){
+    const id=resolve.dataset.id;
+    $(id).value=resolve.dataset.value;
+    recalc();
+    $(id).focus();
+    return;
+  }
+
+  const targetPreset=e.target.closest('.targetPreset');
+  if(targetPreset){
+    document.querySelector('input[name="budgetMethod"][value="fixed"]').checked=true;
+    $('target').value=targetPreset.dataset.value;
+    qsa('.targetPreset').forEach(b=>b.setAttribute('aria-pressed',String(b===targetPreset)));
+    recalc();
+    return;
+  }
+
+  const sim=e.target.closest('.simPreset');
+  if(sim){
+    $('cutDelivery').value=sim.dataset.d;
+    $('cutDining').value=sim.dataset.o;
+    $('cutGrocery').value=sim.dataset.g;
+    $('cutSnack').value=sim.dataset.s;
+    qsa('.simPreset').forEach(b=>b.setAttribute('aria-pressed',String(b===sim)));
+    recalc();
+  }
+});
+
+$('applyAutoPlan').addEventListener('click',()=>{
+  const raw=$('applyAutoPlan').dataset.plan;
+  if(!raw)return;
+  try{
+    const plan=JSON.parse(raw);
+    $('cutDelivery').value=plan.d||0;
+    $('cutDining').value=plan.o||0;
+    $('cutGrocery').value=plan.g||0;
+    $('cutSnack').value=plan.s||0;
+    qsa('.simPreset').forEach(b=>b.setAttribute('aria-pressed','false'));
+    recalc();
+  }catch(e){}
+});
+
+$('sampleBtn').addEventListener('click',loadSample);
+$('clearBtn').addEventListener('click',clearAll);
+$('calcForm').addEventListener('submit',e=>e.preventDefault());
+
+clearAll();
+})();
 </script>
 </body>
 </html>
