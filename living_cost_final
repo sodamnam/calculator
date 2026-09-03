@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="description" content="월소득과 생활비를 입력하면 고정비·변동비·비정기 지출, 월 잔액, 연간 잔액, 지출 TOP3와 조정 우선순위를 자동 분석하는 생활비 계산기">
+<title>우리집 생활비 건강검진 계산기</title>
+<style>
+:root{
+  --bg:#f6f7f9;--card:#fff;--text:#17191f;--muted:#697180;--border:#e3e7ed;
+  --accent:#2563eb;--accent-soft:#eff6ff;--good:#15803d;--warn:#b96500;--bad:#c62828;
+  --blue:#2563eb;--violet:#7c3aed;--orange:#ea580c;--pink:#db2777;--cyan:#0891b2;--green:#16a34a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",Arial,sans-serif;line-height:1.55}
+.wrap{max-width:1080px;margin:0 auto;padding:24px 16px 60px}
+h1{font-size:29px;line-height:1.25;margin:0 0 8px;letter-spacing:-.04em}h2{font-size:19px;margin:0;letter-spacing:-.02em}p{margin:0}
+.lead{color:var(--muted)}
+.help{background:var(--accent-soft);border:1px solid #dbeafe;border-radius:15px;padding:14px;margin-top:14px;font-size:13px}
+.panel,.card{background:var(--card);border:1px solid var(--border);border-radius:18px}.panel{padding:18px;margin-top:14px}.card{padding:14px;min-width:0}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.grid{display:grid;gap:12px}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}.g5{grid-template-columns:repeat(5,minmax(0,1fr))}
+@media(max-width:880px){.g5,.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:580px){.g5,.g4,.g3,.g2{grid-template-columns:1fr}h1{font-size:24px}.metric{font-size:22px!important}.compare{grid-template-columns:1fr!important}.compare-arrow{transform:rotate(90deg)}}
+label{display:block;font-size:14px;font-weight:750}input,select,button{font:inherit}
+input,select{width:100%;min-height:46px;margin-top:6px;border:1px solid var(--border);border-radius:12px;padding:0 12px;background:#fff;color:var(--text);font-size:16px}
+input:focus,select:focus{outline:3px solid #dbeafe;border-color:var(--accent)}input[type=range]{border:0;padding:0;background:transparent;min-height:36px}
+button{min-height:44px;border:1px solid var(--border);background:#fff;border-radius:999px;padding:9px 14px;font-weight:800;cursor:pointer;color:var(--text)}
+button:hover{background:#f8fafc}.btn-accent{background:var(--accent);border-color:var(--accent);color:#fff}.btn-accent:hover{background:#1d4ed8}
+.muted{color:var(--muted)}.tiny{font-size:12px}.hidden{display:none!important}.section-gap{margin-top:14px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+.metric{font-size:25px;font-weight:900;letter-spacing:-.04em;overflow-wrap:anywhere}.bar{height:10px;background:#edf0f4;border-radius:999px;overflow:hidden;margin-top:8px}.fill{height:100%;border-radius:999px;transition:width .2s ease}
+.c1{background:var(--blue)}.c2{background:var(--violet)}.c3{background:var(--orange)}.c4{background:var(--pink)}.c5{background:var(--cyan)}.c6{background:var(--green)}
+.good{border-left:5px solid var(--good)}.warn{border-left:5px solid var(--warn)}.bad{border-left:5px solid var(--bad)}
+.badge{display:inline-block;border-radius:999px;padding:4px 8px;font-size:12px;font-weight:900;background:var(--accent-soft);color:var(--accent)}
+.money-result{min-height:20px;margin-top:4px;font-size:12px;color:var(--muted);font-weight:550;line-height:1.45}.money-result strong{color:var(--accent)}.money-result.error{color:var(--bad)}
+.mini-btn{min-height:30px;padding:3px 8px;font-size:11px;margin:4px 4px 0 0;border-radius:8px}.input-examples{font-size:11px;color:var(--muted);margin-top:2px}
+.summary{padding:15px;border-radius:14px;background:#f8fafc;border:1px solid var(--border)}
+.live{margin-top:16px;padding:15px;border:1px solid #dbeafe;background:#f8fbff;border-radius:16px}.compare{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-top:12px}.compare-box{background:#fff;border:1px solid var(--border);border-radius:14px;padding:12px;min-width:0}.compare-arrow{font-size:20px;font-weight:900;color:var(--accent);text-align:center}.compare-label{font-size:11px;color:var(--muted);font-weight:700}.compare-value{font-size:20px;font-weight:900;letter-spacing:-.03em;overflow-wrap:anywhere}
+.sim-good{color:var(--good)}.sim-warn{color:var(--warn)}.sim-bad{color:var(--bad)}.rank{display:flex;align-items:flex-start;gap:10px}.rank-num{flex:0 0 28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#f3f4f6;font-size:12px;font-weight:900}.footer{font-size:12px;color:var(--muted);margin-top:14px}
+.preset[aria-pressed="true"]{background:var(--accent-soft);border-color:#bfdbfe;color:var(--accent)}
+.progress-text{font-size:12px;color:var(--muted);font-weight:700}.soft-note{font-size:12px;color:var(--muted);margin-top:7px}
+@media(prefers-reduced-motion:reduce){.fill{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>우리집 생활비 건강검진 계산기</h1>
+  <p class="lead">월소득과 실제 생활비를 넣으면 돈이 어디로 빠져나가는지, 매달 얼마가 남는지, 무엇부터 점검하면 좋은지 한 번에 계산합니다.</p>
+
+  <div class="help">
+    <strong>금액은 단위를 고를 필요 없이 편하게 입력하세요.</strong><br>
+    <b>650</b> → 650만원 · <b>8</b> → 8만원 · <b>14900</b> → 14,900원 · <b>15만원</b> → 150,000원 · <b>150,000원</b> → 150,000원<br>
+    애매한 숫자만 계산기가 한 번 확인합니다. 입력창 아래의 <b>실제 계산금액</b>을 확인하면 실수를 줄일 수 있어요.
+  </div>
+
+  <div class="actions">
+    <button id="sampleBtn" type="button">예시값 불러오기</button>
+    <button id="clearBtn" type="button">입력값 전체 초기화</button>
+    <span id="inputProgress" class="progress-text" aria-live="polite">금액 입력 0개</span>
+  </div>
+
+  <form id="form" novalidate>
+    <section class="panel">
+      <h2>1. 우리 집 기본 정보</h2>
+      <p class="soft-note">최근 한 달 또는 평소 한 달 기준으로 입력하세요. 이번 달 중간까지의 지출을 넣으면 월 생활비와 직접 비교하기 어렵습니다.</p>
+      <div class="grid g3 section-gap">
+        <label>가족 수 <span class="muted">(선택)</span>
+          <select id="family"><option value="">선택</option><option value="1">1명</option><option value="2">2명</option><option value="3">3명</option><option value="4">4명</option><option value="5">5명</option><option value="6">6명 이상 (6명 기준 계산)</option></select>
+        </label>
+        <label>월 실수령 가구소득
+          <input id="income" class="smart-money" type="text" inputmode="decimal" autocomplete="off" placeholder="예: 650">
+          <div class="input-examples">650 → 650만원 / 650만원 / 6500000 모두 가능</div><div id="incomeHint" class="money-result"></div>
+        </label>
+        <label>월 저축 목표 <span class="muted">(선택)</span>
+          <input id="savingTarget" class="smart-money" type="text" inputmode="decimal" autocomplete="off" placeholder="예: 150">
+          <div class="input-examples">150 → 150만원</div><div id="savingTargetHint" class="money-result"></div>
+        </label>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="row"><div><h2>2. 매달 거의 고정으로 나가는 돈</h2><p class="soft-note">월세·대출, 관리비, 보험, 통신처럼 반복되는 비용입니다.</p></div><div style="text-align:right"><div class="tiny muted">고정비 합계</div><div id="fixedTotal" style="font-weight:900">0원</div></div></div>
+      <div class="grid g4 section-gap">
+        <label>주거비·대출·월세<input id="housing" class="smart-money" type="text" inputmode="decimal" placeholder="예: 120"><div id="housingHint" class="money-result"></div></label>
+        <label>관리비·공과금<input id="utility" class="smart-money" type="text" inputmode="decimal" placeholder="예: 35"><div id="utilityHint" class="money-result"></div></label>
+        <label>보험료<input id="insurance" class="smart-money" type="text" inputmode="decimal" placeholder="예: 40"><div id="insuranceHint" class="money-result"></div></label>
+        <label>통신비<input id="telecom" class="smart-money" type="text" inputmode="decimal" placeholder="예: 20"><div id="telecomHint" class="money-result"></div></label>
+        <label>교육비<input id="education" class="smart-money" type="text" inputmode="decimal" placeholder="예: 80"><div id="educationHint" class="money-result"></div></label>
+        <label>차량 고정비·할부<input id="carFixed" class="smart-money" type="text" inputmode="decimal" placeholder="예: 30"><div id="carFixedHint" class="money-result"></div></label>
+        <label>구독·멤버십<input id="subscription" class="smart-money" type="text" inputmode="decimal" placeholder="예: 14900"><div class="input-examples">14900 → 14,900원 / 7 → 7만원</div><div id="subscriptionHint" class="money-result"></div></label>
+        <label>기타 고정비<input id="otherFixed" class="smart-money" type="text" inputmode="decimal" placeholder="예: 10"><div id="otherFixedHint" class="money-result"></div></label>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="row"><div><h2>3. 선택에 따라 달라지는 생활비</h2><p class="soft-note">장보기, 외식, 쇼핑, 여가처럼 비교적 조절 가능한 비용입니다.</p></div><div style="text-align:right"><div class="tiny muted">변동비 합계</div><div id="variableTotal" style="font-weight:900">0원</div></div></div>
+      <div class="grid g4 section-gap">
+        <label>장보기·집밥<input id="grocery" class="smart-money" type="text" inputmode="decimal" placeholder="예: 70"><div id="groceryHint" class="money-result"></div></label>
+        <label>배달·외식<input id="foodOut" class="smart-money" type="text" inputmode="decimal" placeholder="예: 50"><div id="foodOutHint" class="money-result"></div></label>
+        <label>교통·주유<input id="transport" class="smart-money" type="text" inputmode="decimal" placeholder="예: 25"><div id="transportHint" class="money-result"></div></label>
+        <label>쇼핑·생활용품<input id="shopping" class="smart-money" type="text" inputmode="decimal" placeholder="예: 25"><div id="shoppingHint" class="money-result"></div></label>
+        <label>병원·약<input id="medical" class="smart-money" type="text" inputmode="decimal" placeholder="예: 10"><div id="medicalHint" class="money-result"></div></label>
+        <label>여가·취미<input id="leisure" class="smart-money" type="text" inputmode="decimal" placeholder="예: 20"><div id="leisureHint" class="money-result"></div></label>
+        <label>커피·간식<input id="snack" class="smart-money" type="text" inputmode="decimal" placeholder="예: 8 또는 37500"><div class="input-examples">8 → 8만원 / 37500 → 37,500원</div><div id="snackHint" class="money-result"></div></label>
+        <label>기타 변동비<input id="otherVar" class="smart-money" type="text" inputmode="decimal" placeholder="예: 10"><div id="otherVarHint" class="money-result"></div></label>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>4. 놓치기 쉬운 비정기 지출</h2>
+      <p class="soft-note">자동차세, 경조사, 여행, 명절, 가전 교체처럼 가끔 나가는 돈을 최근 1년 기준으로 합쳐보세요.</p>
+      <div class="grid g2 section-gap">
+        <label>최근 1년 비정기 지출 총액<input id="annualIrregular" class="smart-money" type="text" inputmode="decimal" placeholder="예: 360"><div class="input-examples">360 → 360만원</div><div id="annualIrregularHint" class="money-result"></div></label>
+        <div class="summary"><div class="tiny muted">월 환산 비정기 지출</div><div id="monthlyIrregular" class="metric">0원</div><div class="tiny muted">연간 금액 ÷ 12</div></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="row"><div><h2>5. 생활비 조정 시뮬레이션</h2><p class="soft-note">아래 비율은 ‘이만큼 줄여야 한다’는 권장이 아니라, 줄였을 때 숫자가 어떻게 달라지는지 보는 가정입니다.</p></div></div>
+      <div class="actions" style="margin-bottom:4px"><span class="tiny muted" style="align-self:center">빠른 시나리오</span><button type="button" class="preset" data-fixed="3" data-var="5" data-irregular="5">가볍게</button><button type="button" class="preset" data-fixed="5" data-var="10" data-irregular="10">현실적으로</button><button type="button" class="preset" data-fixed="8" data-var="15" data-irregular="15">강하게</button><button type="button" class="preset" data-fixed="0" data-var="0" data-irregular="0">0%로</button></div>
+      <div class="grid g3 section-gap">
+        <label>고정비 <strong id="fixedCutLabel">0%</strong> 줄이기<input id="fixedCut" type="range" min="0" max="20" step="1" value="0"></label>
+        <label>변동비 <strong id="varCutLabel">0%</strong> 줄이기<input id="varCut" type="range" min="0" max="25" step="1" value="0"></label>
+        <label>비정기 지출 <strong id="irregularCutLabel">0%</strong> 줄이기<input id="irregularCut" type="range" min="0" max="25" step="1" value="0"></label>
+      </div>
+      <div id="liveSimulation" class="live hidden" aria-live="polite">
+        <div class="row"><div><strong>조정 후 결과가 실시간으로 바뀝니다</strong><p class="tiny muted" style="margin-top:3px">현재값은 비교 기준으로 유지하고 조정 후 예상값만 움직입니다.</p></div><span id="liveSavingBadge" class="badge">월 0원 절감</span></div>
+        <div class="compare"><div class="compare-box"><div class="compare-label">현재 월 생활비</div><div id="liveBeforeExpense" class="compare-value">-</div></div><div class="compare-arrow">→</div><div class="compare-box"><div class="compare-label">조정 후 월 생활비</div><div id="liveAfterExpense" class="compare-value sim-good">-</div></div></div>
+        <div class="grid g3 section-gap"><div class="card"><div class="tiny muted">조정 후 고정비</div><div id="liveAfterFixed" class="metric">-</div><div id="liveFixedDiff" class="tiny muted"></div></div><div class="card"><div class="tiny muted">조정 후 변동비</div><div id="liveAfterVariable" class="metric">-</div><div id="liveVariableDiff" class="tiny muted"></div></div><div class="card"><div class="tiny muted">조정 후 비정기 월환산</div><div id="liveAfterIrregular" class="metric">-</div><div id="liveIrregularDiff" class="tiny muted"></div></div></div>
+        <div class="compare"><div class="compare-box"><div class="compare-label">현재 월 잔액</div><div id="liveBeforeBalance" class="compare-value">-</div></div><div class="compare-arrow">→</div><div class="compare-box"><div class="compare-label">조정 후 월 잔액</div><div id="liveAfterBalance" class="compare-value">-</div></div></div>
+        <div class="summary section-gap"><div class="row"><div><div class="tiny muted">조정 후 생활비 여유도</div><div id="liveHealth" style="font-size:18px;font-weight:900">-</div></div><div style="text-align:right"><div class="tiny muted">1년 누적 절감</div><div id="liveAnnualSaving" style="font-size:18px;font-weight:900">-</div></div></div></div>
+      </div>
+    </section>
+  </form>
+
+  <section id="empty" class="panel"><strong>월소득과 생활비를 입력해보세요.</strong><p class="soft-note">빠르게 체험하려면 위의 ‘예시값 불러오기’를 누르면 됩니다.</p></section>
+
+  <section id="results" class="hidden" aria-live="polite">
+    <div id="healthCard" class="panel good">
+      <div class="row"><div><div class="tiny muted">우리 집 생활비 여유도 <span class="badge">계산기 내부 기준</span></div><div id="healthText" class="metric">-</div><div id="healthSub" class="tiny muted"></div></div><div style="text-align:right"><div class="tiny muted">월 예상 잔액</div><div id="monthlyBalance" class="metric">-</div><div id="balanceSub" class="tiny muted"></div></div></div>
+      <div class="bar"><div id="expenseBar" class="fill c1" style="width:0%"></div></div><div class="row tiny muted"><span id="expenseLabel"></span><span id="incomeLabel"></span></div>
+    </div>
+
+    <div class="grid g5 section-gap"><div class="card"><div class="tiny muted">월 총생활비</div><div id="monthlyExpense" class="metric">-</div></div><div class="card"><div class="tiny muted">월 잔액</div><div id="balanceMetric" class="metric">-</div></div><div class="card"><div class="tiny muted">저축 가능률</div><div id="savingRate" class="metric">-</div></div><div class="card"><div class="tiny muted">1인당 생활비</div><div id="perPerson" class="metric">-</div></div><div class="card"><div class="tiny muted">연간 예상 잔액</div><div id="annualBalance" class="metric">-</div></div></div>
+
+    <div class="panel"><div class="row"><div><h2>생활비 구조</h2><p class="soft-note">고정비·변동비·비정기 지출이 소득에서 차지하는 비중입니다.</p></div><div id="savingTargetStatus" class="badge">-</div></div><div id="structureRows" class="section-gap"></div></div>
+
+    <div class="panel"><h2>지출 규모 TOP 3</h2><p class="soft-note">가장 큰 지출부터 확인합니다. 금액이 크다고 무조건 줄여야 하는 항목이라는 뜻은 아닙니다.</p><div id="sizeRanks" class="grid g3 section-gap"></div></div>
+
+    <div class="panel"><h2>조정 우선순위 TOP 3</h2><p class="soft-note">금액 크기와 조정하기 쉬운 정도를 함께 본 계산기 내부 우선순위입니다. 의료·교육처럼 필요한 지출은 단순 삭감보다 적정성 점검이 우선입니다.</p><div id="adjustRanks" class="grid g3 section-gap"></div></div>
+
+    <div id="savingGoalPanel" class="panel hidden"><h2>저축 목표까지 얼마나 남았을까?</h2><div id="savingGoalText" class="section-gap"></div></div>
+
+    <div class="panel"><div class="row"><div><h2>조정 결과 요약</h2><p class="soft-note">위 슬라이더를 움직이면 아래 수치도 실시간으로 같이 바뀝니다.</p></div><div style="text-align:right"><div class="tiny muted">1년 예상 절감액</div><div id="annualSaving" class="metric">-</div></div></div><div class="grid g3 section-gap"><div class="card"><div class="tiny muted">월 예상 절감</div><div id="monthlySaving" class="metric">-</div></div><div class="card"><div class="tiny muted">조정 후 월 잔액</div><div id="afterBalance" class="metric">-</div></div><div class="card"><div class="tiny muted">조정 후 연간 잔액</div><div id="afterAnnualBalance" class="metric">-</div></div></div></div>
+
+    <div class="panel"><h2>우리 집 생활비 한줄 진단</h2><div id="diagnosis" class="section-gap"></div></div>
+    <div class="footer">※ 본 계산기는 가계 구조를 쉽게 점검하기 위한 시뮬레이션입니다. ‘생활비 여유도’와 ‘조정 우선순위’는 공식 기준이 아니라 입력값을 바탕으로 한 계산기 내부 기준입니다. 보험·의료·교육·주거 등은 단순히 금액만 보고 줄이기보다 필요성과 계약조건을 함께 확인하세요.</div>
+  </section>
+</div>
+
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);const qsa=s=>[...document.querySelectorAll(s)];
+const money=n=>Math.round(Number.isFinite(n)?n:0).toLocaleString('ko-KR')+'원';const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const fixedIds=['housing','utility','insurance','telecom','education','carFixed','subscription','otherFixed'];const variableIds=['grocery','foodOut','transport','shopping','medical','leisure','snack','otherVar'];const amountIds=['income','savingTarget','annualIrregular',...fixedIds,...variableIds];
+const labels={housing:'주거비·대출·월세',utility:'관리비·공과금',insurance:'보험료',telecom:'통신비',education:'교육비',carFixed:'차량 고정비',subscription:'구독·멤버십',otherFixed:'기타 고정비',grocery:'장보기·집밥',foodOut:'배달·외식',transport:'교통·주유',shopping:'쇼핑·생활용품',medical:'병원·약',leisure:'여가·취미',snack:'커피·간식',otherVar:'기타 변동비'};
+const ambiguousMan=new Set(['income','savingTarget','housing','annualIrregular']);const microWon=new Set(['subscription','snack']);
+const adjustWeight={subscription:1,telecom:.92,foodOut:.9,snack:.88,shopping:.82,leisure:.78,otherVar:.7,otherFixed:.62,insurance:.52,transport:.5,grocery:.48,utility:.42,carFixed:.38,housing:.25,education:.2,medical:.08};
+const advice={subscription:'안 쓰는 구독·멤버십이 있는지 먼저 확인해보세요.',telecom:'요금제·결합·알뜰폰 등 현재 사용량과 맞는지 비교해볼 만합니다.',foodOut:'횟수만 조금 줄여도 체감 절감액이 빠르게 커질 수 있습니다.',snack:'일괄 금지보다 주간 한도를 정하는 편이 유지하기 쉽습니다.',shopping:'필수 생활용품과 충동구매를 분리하면 줄일 곳이 더 잘 보입니다.',leisure:'만족도가 낮았던 지출부터 줄이는 방식이 현실적입니다.',otherVar:'내역을 한 번 더 쪼개면 실제로 줄일 항목을 찾기 쉽습니다.',otherFixed:'자동결제 내역을 열어 실제 사용 여부부터 확인해보세요.',insurance:'보장 공백이 생기지 않도록 단순 해지보다 중복·불필요 특약 여부를 점검하세요.',transport:'주유·주차·통행료 등 세부 항목을 분리해보세요.',grocery:'버리는 식재료와 계획 밖 장보기가 있는지 확인해보세요.',utility:'계절 요인과 사용량을 먼저 비교한 뒤 절감 가능성을 보세요.',carFixed:'할부·보험·주차 등 차량 보유 고정비를 따로 비교해보세요.',housing:'주거비는 단순 삭감보다 계약·대출 구조를 점검하는 영역입니다.',education:'교육비는 금액만 줄이기보다 실제 이용도와 만족도를 함께 보세요.',medical:'의료비는 필요한 지출을 임의로 줄이지 말고 보장·환급·중복청구 가능 여부를 확인하세요.'};
+function parseSmart(id,raw){
+  if(raw==null)return {value:0,valid:false,empty:true};let original=String(raw).trim();if(!original)return {value:0,valid:false,empty:true};
+  if(original.includes('-'))return {value:0,valid:false,error:'음수 금액은 입력할 수 없습니다.'};
+  let s=original.replace(/\s/g,'').replace(/,/g,'');
+  if(!/^[0-9.]+(?:만원|만|원)?$/.test(s))return {value:0,valid:false,error:'숫자, 쉼표, 원/만원만 입력할 수 있습니다.'};
+  const hasMan=s.endsWith('만원')||s.endsWith('만');const hasWon=!hasMan&&s.endsWith('원');
+  let cleaned=s.replace(/만원$/,'').replace(/만$/,'').replace(/원$/,'');if((cleaned.match(/\./g)||[]).length>1)return {value:0,valid:false,error:'소수점 형식을 확인해주세요.'};
+  const n=Number(cleaned);if(!Number.isFinite(n)||n<0)return {value:0,valid:false,error:'금액을 다시 확인해주세요.'};
+  if(hasMan)return {value:n*10000,valid:true,mode:'만원 명시',source:n};if(hasWon)return {value:n,valid:true,mode:'원 명시',source:n};
+  if(microWon.has(id)&&n>=100)return {value:n,valid:true,mode:'원 자동',source:n,note:'소액 항목 특성상 원으로 해석'};
+  if(n<=999)return {value:n*10000,valid:true,mode:'만원 자동',source:n};if(n>=10000)return {value:n,valid:true,mode:'원 자동',source:n};
+  if(ambiguousMan.has(id))return {value:n*10000,valid:true,mode:'만원 자동',source:n,note:'이 항목 특성상 만원으로 해석'};
+  return {value:0,valid:false,ambiguous:true,source:n,error:'단위가 애매합니다.'};
+}
+function val(id){const p=parseSmart(id,$(id).value);return p.valid?p.value:0}function sum(ids){return ids.reduce((a,id)=>a+val(id),0)}
+function hint(id){const el=$(id),box=$(id+'Hint');if(!el||!box)return;const p=parseSmart(id,el.value);box.classList.remove('error');if(p.empty){box.innerHTML='';return}if(p.valid){box.innerHTML='→ 실제 계산금액 <strong>'+money(p.value)+'</strong> · '+p.mode+(p.note?' <span class="muted">('+p.note+')</span>':'');return}box.classList.add('error');if(p.ambiguous){box.innerHTML=`${p.source.toLocaleString('ko-KR')}은 원/만원 모두 가능해요.<br><button type="button" class="mini-btn resolve" data-id="${id}" data-value="${p.source}원">${p.source.toLocaleString('ko-KR')}원</button><button type="button" class="mini-btn resolve" data-id="${id}" data-value="${p.source}만원">${p.source.toLocaleString('ko-KR')}만원</button>`}else box.textContent=p.error||'금액을 다시 확인해주세요.'}
+function updateProgress(){const filled=amountIds.filter(id=>String($(id).value).trim()).length;const invalid=amountIds.filter(id=>{const raw=String($(id).value).trim();return raw&&!parseSmart(id,raw).valid}).length;$('inputProgress').textContent=`금액 입력 ${filled}개${invalid?` · 확인 필요 ${invalid}개`:''}`}
+function clearAll(){amountIds.forEach(id=>$(id).value='');$('family').value='';$('fixedCut').value='0';$('varCut').value='0';$('irregularCut').value='0';qsa('.preset').forEach(b=>b.setAttribute('aria-pressed','false'));recalc()}
+function loadSample(){Object.assign($('family'),{value:'4'});const d={income:'650',savingTarget:'150',housing:'120',utility:'35',insurance:'40',telecom:'20',education:'80',carFixed:'30',subscription:'14900',otherFixed:'10',grocery:'70',foodOut:'50',transport:'25',shopping:'25',medical:'10',leisure:'20',snack:'8',otherVar:'10',annualIrregular:'360'};Object.entries(d).forEach(([k,v])=>$(k).value=v);$('fixedCut').value='5';$('varCut').value='10';$('irregularCut').value='10';recalc()}
+function classify(balance,income,savingTarget){const er=(income-balance)/income*100;if(balance<0)return ['적자 구조입니다','현재 입력 기준으로 생활비가 소득을 넘습니다.','bad'];if(savingTarget>0){if(balance>=savingTarget*1.2)return ['저축 목표보다 여유 있습니다','현재 지출 구조라면 저축 목표를 넘길 여지가 있습니다.','good'];if(balance>=savingTarget)return ['저축 목표 달성권입니다','현재 입력 기준으로 저축 목표를 맞출 수 있습니다.','good'];if(balance>=savingTarget*.7)return ['조금만 조정하면 됩니다','저축 목표와의 차이가 크지 않습니다.','warn'];return ['저축 목표와 차이가 큽니다','몇 개 큰 항목부터 점검하면 차이를 줄일 수 있습니다.','bad']}if(er<=65)return ['여유 있는 편입니다','소득 대비 생활비 비중에 비교적 여유가 있습니다.','good'];if(er<=80)return ['무난하지만 점검해볼 만합니다','큰 항목 한두 개만 정리해도 잔액이 커질 수 있습니다.','warn'];return ['지출 압박이 큰 편입니다','생활비 비중이 높아 예상 밖 지출에 잔액이 흔들릴 수 있습니다.','bad']}
+function recalc(){amountIds.forEach(hint);updateProgress();$('fixedCutLabel').textContent=$('fixedCut').value+'%';$('varCutLabel').textContent=$('varCut').value+'%';$('irregularCutLabel').textContent=$('irregularCut').value+'%';
+  const fixed=sum(fixedIds),variable=sum(variableIds),irregular=val('annualIrregular')/12,income=val('income'),savingTarget=val('savingTarget'),expense=fixed+variable+irregular,balance=income-expense;
+  $('fixedTotal').textContent=money(fixed);$('variableTotal').textContent=money(variable);$('monthlyIrregular').textContent=money(irregular);
+  const hasInvalid=amountIds.some(id=>{const raw=String($(id).value).trim();return raw&&!parseSmart(id,raw).valid});const ready=income>0&&expense>0&&!hasInvalid;$('empty').classList.toggle('hidden',ready);$('results').classList.toggle('hidden',!ready);$('liveSimulation').classList.toggle('hidden',!ready);if(!ready)return;
+  const family=Number($('family').value)||0,annual=balance*12,expenseRatio=expense/income*100,fixedRatio=fixed/income*100,varRatio=variable/income*100,savingRate=Math.max(0,balance)/income*100;const [health,sub,cls]=classify(balance,income,savingTarget);$('healthCard').className='panel '+cls;$('healthText').textContent=health;$('healthSub').textContent=sub;$('monthlyBalance').textContent=(balance>=0?'남음 ':'부족 ')+money(Math.abs(balance));$('balanceSub').textContent=savingTarget>0?(balance>=savingTarget?'저축 목표 '+money(savingTarget)+' 달성 가능':'저축 목표까지 '+money(savingTarget-balance)+' 부족'):'저축 목표를 입력하면 목표 달성 여부도 계산합니다.';
+  $('monthlyExpense').textContent=money(expense);$('balanceMetric').textContent=(balance>=0?'+' : '-')+money(Math.abs(balance));$('savingRate').textContent=savingRate.toFixed(1)+'%';$('perPerson').textContent=family?money(expense/family):'가족 수 입력';$('annualBalance').textContent=(annual>=0?'남음 ':'부족 ')+money(Math.abs(annual));$('expenseBar').style.width=clamp(expenseRatio,0,100)+'%';$('expenseLabel').textContent='생활비 '+money(expense)+' · 소득의 '+expenseRatio.toFixed(1)+'%';$('incomeLabel').textContent='소득 '+money(income);$('savingTargetStatus').textContent=savingTarget>0?(balance>=savingTarget?'저축목표 가능':'저축목표 부족'):'저축목표 미입력';
+  const structure=[['고정비',fixed,'c1'],['변동비',variable,'c2'],['비정기 월환산',irregular,'c3'],['잔액',Math.max(0,balance),'c6']];$('structureRows').innerHTML=structure.map(([name,x,c])=>{const pct=x/income*100;return `<div style="margin-bottom:14px"><div class="row tiny"><strong>${name}</strong><span>${money(x)} · ${pct.toFixed(1)}%</span></div><div class="bar"><div class="fill ${c}" style="width:${clamp(pct,0,100)}%"></div></div></div>`}).join('');
+  const all=[...fixedIds,...variableIds].map(id=>({id,value:val(id)})).filter(x=>x.value>0);const bySize=[...all].sort((a,b)=>b.value-a.value).slice(0,3);$('sizeRanks').innerHTML=bySize.map((x,i)=>`<div class="card rank"><div class="rank-num">${i+1}</div><div><strong>${labels[x.id]}</strong><div class="metric" style="font-size:20px">${money(x.value)}</div><div class="tiny muted">월소득의 ${(x.value/income*100).toFixed(1)}%</div></div></div>`).join('');
+  const byAdjust=[...all].map(x=>({...x,score:x.value*(adjustWeight[x.id]||.4)})).sort((a,b)=>b.score-a.score).slice(0,3);$('adjustRanks').innerHTML=byAdjust.map((x,i)=>`<div class="card rank"><div class="rank-num">${i+1}</div><div><strong>${labels[x.id]}</strong><p class="tiny muted" style="margin-top:6px">${advice[x.id]||'세부 내역을 나눠서 점검해보세요.'}</p></div></div>`).join('');
+  if(savingTarget>0){$('savingGoalPanel').classList.remove('hidden');const gap=savingTarget-balance;$('savingGoalText').innerHTML=gap<=0?`<p>현재 입력 기준으로 월 저축 목표 <strong>${money(savingTarget)}</strong>를 맞추고도 약 <strong>${money(Math.abs(gap))}</strong>의 추가 여유가 있습니다.</p>`:`<p>현재 구조에서는 저축 목표까지 월 <strong>${money(gap)}</strong>이 부족합니다. 아래 시뮬레이션의 월 절감액이 이 금액을 넘는지 확인해보세요.</p>`}else $('savingGoalPanel').classList.add('hidden');
+  const fRate=Number($('fixedCut').value)/100,vRate=Number($('varCut').value)/100,iRate=Number($('irregularCut').value)/100,afterFixed=fixed*(1-fRate),afterVariable=variable*(1-vRate),afterIrregular=irregular*(1-iRate),afterExpense=afterFixed+afterVariable+afterIrregular,monthlySaving=expense-afterExpense,afterBalance=income-afterExpense,afterAnnual=afterBalance*12,afterExpenseRatio=afterExpense/income*100;
+  $('liveSavingBadge').textContent='월 '+money(monthlySaving)+' 절감';$('liveBeforeExpense').textContent=money(expense);$('liveAfterExpense').textContent=money(afterExpense);$('liveAfterFixed').textContent=money(afterFixed);$('liveAfterVariable').textContent=money(afterVariable);$('liveAfterIrregular').textContent=money(afterIrregular);$('liveFixedDiff').textContent='현재보다 '+money(fixed-afterFixed)+' 감소';$('liveVariableDiff').textContent='현재보다 '+money(variable-afterVariable)+' 감소';$('liveIrregularDiff').textContent='현재보다 '+money(irregular-afterIrregular)+' 감소';$('liveBeforeBalance').textContent=(balance>=0?'남음 ':'부족 ')+money(Math.abs(balance));$('liveAfterBalance').textContent=(afterBalance>=0?'남음 ':'부족 ')+money(Math.abs(afterBalance));$('liveAfterBalance').className='compare-value '+(afterBalance>=0?'sim-good':'sim-bad');$('liveAnnualSaving').textContent=money(monthlySaving*12);const [liveH,,liveCls]=classify(afterBalance,income,savingTarget);$('liveHealth').className=liveCls==='good'?'sim-good':liveCls==='warn'?'sim-warn':'sim-bad';$('liveHealth').textContent=liveH+' · 소득의 '+afterExpenseRatio.toFixed(1)+'% 사용';
+  $('monthlySaving').textContent=money(monthlySaving);$('annualSaving').textContent=money(monthlySaving*12);$('afterBalance').textContent=(afterBalance>=0?'남음 ':'부족 ')+money(Math.abs(afterBalance));$('afterAnnualBalance').textContent=(afterAnnual>=0?'남음 ':'부족 ')+money(Math.abs(afterAnnual));
+  if(savingTarget>0){const gapAfter=savingTarget-afterBalance;if(gapAfter<=0)$('savingGoalText').innerHTML+=`<p style="margin-top:8px" class="sim-good"><strong>현재 시뮬레이션을 적용하면 저축 목표를 달성하는 계산입니다.</strong></p>`;else $('savingGoalText').innerHTML+=`<p style="margin-top:8px" class="sim-warn">현재 시뮬레이션을 적용해도 월 <strong>${money(gapAfter)}</strong>이 더 필요합니다.</p>`}
+  const top=bySize[0],adjust=byAdjust[0];let core=balance<0?`현재 입력대로라면 매달 <strong>${money(Math.abs(balance))}</strong>가 부족합니다.`:`현재 입력대로라면 매달 <strong>${money(balance)}</strong>가 남습니다.`;core+=top?` 가장 큰 지출은 <strong>${labels[top.id]} ${money(top.value)}</strong>입니다.`:'';core+=adjust?` 줄일 곳을 찾는다면 금액만 가장 큰 항목보다 <strong>${labels[adjust.id]}</strong>부터 점검해보는 편이 생활 만족도를 덜 건드릴 가능성이 있습니다.`:'';$('diagnosis').innerHTML=`<p>${core}</p><p style="margin-top:8px">비정기 지출까지 월로 환산하면 실제 생활비는 <strong>${money(expense)}</strong>입니다. 현재 시뮬레이션 기준 월 <strong>${money(monthlySaving)}</strong>, 1년 <strong>${money(monthlySaving*12)}</strong>의 차이가 생깁니다.</p>`;
+}
+qsa('.smart-money').forEach(el=>{el.addEventListener('input',recalc);el.addEventListener('blur',recalc)});qsa('input[type=range]').forEach(el=>{el.addEventListener('input',()=>{qsa('.preset').forEach(x=>x.setAttribute('aria-pressed','false'));recalc()});el.addEventListener('change',recalc)});qsa('select').forEach(el=>{el.addEventListener('input',recalc);el.addEventListener('change',recalc)});document.addEventListener('click',e=>{const b=e.target.closest('.resolve');if(b){$(b.dataset.id).value=b.dataset.value;$(b.dataset.id).focus();recalc()}});qsa('.preset').forEach(b=>b.addEventListener('click',()=>{$('fixedCut').value=b.dataset.fixed;$('varCut').value=b.dataset.var;$('irregularCut').value=b.dataset.irregular;qsa('.preset').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));recalc()}));$('sampleBtn').addEventListener('click',loadSample);$('clearBtn').addEventListener('click',clearAll);$('form').addEventListener('submit',e=>e.preventDefault());clearAll();
+})();
+</script>
+</body>
+</html>
