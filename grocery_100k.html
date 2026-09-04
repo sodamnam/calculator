@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>4인 가족 일주일 장보기 10만원 계산기 FINAL V3</title>
+<style>
+:root{
+  --bg:#f6f7f9;--card:#fff;--text:#17191f;--muted:#6b7280;--border:#e5e7eb;
+  --accent:#2563eb;--soft:#eff6ff;--good:#15803d;--warn:#d97706;--bad:#dc2626;
+  --purple:#7c3aed;--orange:#ea580c;--green:#16a34a;--cyan:#0891b2;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",Arial,sans-serif;line-height:1.55}
+.wrap{max-width:1120px;margin:auto;padding:24px 16px 56px}
+h1{font-size:28px;margin:0 0 8px;line-height:1.25}h2{font-size:19px;margin:0}h3{font-size:16px;margin:0}
+p{margin:0}.lead,.muted{color:var(--muted)}.tiny{font-size:12px}
+.panel,.card{background:#fff;border:1px solid var(--border);border-radius:18px}.panel{padding:18px;margin-top:14px}.card{padding:14px}
+.grid{display:grid;gap:12px}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.row{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+@media(max-width:900px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.item-head{display:none}.item-row{grid-template-columns:1.15fr .9fr .8fr .55fr .95fr auto!important}}
+@media(max-width:620px){.g4,.g3,.g2{grid-template-columns:1fr}h1{font-size:24px}.metric{font-size:22px!important}.item-row{grid-template-columns:1fr!important;padding:14px 0}.item-row label::before{content:attr(data-label);display:block;font-size:11px;color:var(--muted);margin-bottom:2px}.bottom-actions{justify-content:stretch}.bottom-actions button{flex:1}}
+label{font-size:14px;font-weight:800;display:block}
+input,select,button{font:inherit}input,select{width:100%;min-height:44px;margin-top:6px;border:1px solid var(--border);border-radius:11px;padding:0 11px;background:#fff;color:var(--text)}
+input:focus,select:focus{outline:2px solid #bfdbfe;border-color:var(--accent)}
+button{min-height:42px;border:1px solid var(--border);border-radius:999px;background:#fff;padding:8px 13px;font-weight:800;cursor:pointer;color:var(--text)}
+button:hover{background:#f9fafb}.primary{background:var(--accent);border-color:var(--accent);color:#fff}.primary:hover{background:#1d4ed8}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}.bottom-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:14px}
+.smart{background:var(--soft);border:1px solid #dbeafe;border-radius:13px;padding:12px 13px;margin-top:12px;font-size:13px}
+.metric{font-size:25px;font-weight:900;letter-spacing:-.03em;overflow-wrap:anywhere}
+.hint{min-height:18px;font-size:11px;color:var(--muted);margin-top:3px}.hint strong{color:var(--accent)}
+.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:var(--soft);color:var(--accent);font-size:11px;font-weight:900}
+.good{border-left:5px solid var(--good)}.warn{border-left:5px solid var(--warn)}.bad{border-left:5px solid var(--bad)}
+.bar{height:10px;border-radius:999px;background:#edf0f4;overflow:hidden;margin-top:8px}.fill{height:100%;border-radius:999px;transition:width .2s}.c1{background:var(--accent)}.c2{background:var(--purple)}.c3{background:var(--orange)}.c4{background:var(--green)}.c5{background:var(--cyan)}
+.item-head,.item-row{display:grid;grid-template-columns:1.35fr .95fr .85fr .55fr 1.05fr auto;gap:8px;align-items:end}
+.item-head{font-size:11px;color:var(--muted);font-weight:800;padding:0 0 5px;border-bottom:1px solid var(--border)}
+.item-row{border-bottom:1px solid #f0f1f3;padding:10px 0}.item-row:last-child{border-bottom:0}.item-row label{font-size:11px;color:var(--muted)}.item-row input,.item-row select{margin-top:3px}
+.remove{min-width:42px;padding:7px 9px;color:var(--bad)}
+.section-gap{margin-top:14px}.breakdown-row{margin-bottom:12px}
+.warnbox{background:#fffbeb;border:1px solid #fde68a;border-radius:14px;padding:13px}
+.goodbox{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:14px;padding:13px}
+.info-box{background:#f8fafc;border:1px solid var(--border);border-radius:14px;padding:13px}
+.type-note{font-size:11px;color:var(--muted);margin-top:6px}
+.footer{font-size:12px;color:var(--muted);margin-top:14px}.hidden{display:none!important}
+.quick-grid{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}.quick-grid button{font-size:11px;min-height:34px;padding:5px 9px}
+.compare{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px}.arrow{font-size:20px;font-weight:900;color:var(--accent)}
+@media(max-width:560px){.compare{grid-template-columns:1fr}.arrow{text-align:center;transform:rotate(90deg)}}
+.sticky-summary{position:sticky;top:8px;z-index:8;background:#fff;border:1px solid #bfdbfe;border-radius:14px;padding:10px 12px;margin-top:12px}
+.sticky-summary .metric{font-size:18px}
+.save-state{font-size:11px;color:var(--muted);font-weight:700}
+.scenario-card{border-top:4px solid var(--border)}
+.scenario-card.pass{border-top-color:var(--good)}
+.scenario-card.fail{border-top-color:var(--bad)}
+.scenario-card.near{border-top-color:var(--warn)}
+.scenario-status{font-size:11px;font-weight:900;margin-top:5px}
+.pass-text{color:var(--good)}.fail-text{color:var(--bad)}.near-text{color:var(--warn)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>일주일 장보기 10만 원 계산기</h1>
+  <p class="lead">마트 결제액과 ‘이번 주 실제 식재료비’를 분리해서 보고, 10만 원을 넘긴 이유와 어디서 조정할지까지 확인해보세요.</p>
+
+  <div class="smart">
+    <strong>가격은 편하게 입력하세요.</strong>
+    6500 → 6,500원 · 4 → 4만원 · 1.5만 → 15,000원 · 15,000원 → 15,000원<br>
+    <span class="tiny">품목은 16개로 제한되지 않습니다. 아래의 <b>품목 1개 추가 / 빈칸 5개 추가</b> 버튼으로 계속 늘릴 수 있습니다.</span>
+  </div>
+
+  <section class="panel">
+    <h2>1. 이번 주 장보기 기준</h2>
+    <div class="grid g4 section-gap">
+      <label>가족 수
+        <select id="family">
+          <option value="1">1명</option><option value="2">2명</option><option value="3">3명</option>
+          <option value="4" selected>4명</option><option value="5">5명</option><option value="6">6명 이상</option>
+        </select>
+      </label>
+      <label>주간 식비 예산
+        <input id="budget" type="text" inputmode="decimal" value="10">
+        <div id="budgetHint" class="hint"></div>
+      </label>
+      <label>집에서 먹는 식사 패턴
+        <select id="mealPattern">
+          <option value="7">하루 1끼 정도</option>
+          <option value="14" selected>하루 2끼 정도</option>
+          <option value="21">하루 3끼 모두</option>
+          <option value="9">평일 1끼 + 주말 2끼</option>
+          <option value="16">평일 2끼 + 주말 3끼</option>
+          <option value="custom">직접 입력</option>
+        </select>
+        <div id="mealPatternHint" class="hint">주 14회 · 월 약 61회</div>
+      </label>
+      <div class="card">
+        <div class="tiny muted">마트 예상 결제액</div>
+        <div id="topTotal" class="metric">0원</div>
+        <div id="topFood" class="tiny muted">식비 0원</div>
+      </div>
+    </div>
+
+    <div id="customMealsWrap" class="section-gap hidden" style="max-width:320px">
+      <label>일주일 집밥 횟수 직접 입력
+        <input id="customMeals" type="number" min="1" max="21" value="14">
+        <div id="customMealsHint" class="hint">주 14회 · 월 약 61회</div>
+      </label>
+    </div>
+
+    <div class="actions">
+      <button id="sampleBtn" type="button">포스팅 예시 장바구니</button>
+      <button id="riceBtn" type="button">+ 쌀 10kg 재고보충</button>
+      <button id="addBtn" type="button" class="primary">+ 품목 1개 추가</button>
+      <button id="add5Btn" type="button">+ 빈칸 5개 추가</button>
+      <button id="clearBtn" type="button">전체 비우기</button>
+      <span id="saveState" class="save-state">입력내용 자동 저장</span>
+    </div>
+
+    <div class="quick-grid">
+      <span class="tiny muted" style="align-self:center">빠른 추가:</span>
+      <button type="button" class="quick" data-name="우유" data-cat="달걀·유제품" data-type="weekly">우유</button>
+      <button type="button" class="quick" data-name="달걀" data-cat="달걀·유제품" data-type="weekly">달걀</button>
+      <button type="button" class="quick" data-name="두부" data-cat="단백질" data-type="weekly">두부</button>
+      <button type="button" class="quick" data-name="과일" data-cat="과일·간식" data-type="optional">과일</button>
+      <button type="button" class="quick" data-name="과자·음료" data-cat="과일·간식" data-type="optional">과자·음료</button>
+      <button type="button" class="quick" data-name="식용유" data-cat="곡류·주식" data-type="stock">식용유</button>
+      <button type="button" class="quick" data-name="휴지·세제" data-cat="기타" data-type="household">생활용품</button>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="row">
+      <div>
+        <h2>2. 장바구니 품목</h2>
+        <p class="tiny muted section-gap">핵심은 가격만 적는 게 아니라 <strong>왜 산 돈인지</strong> 구분하는 겁니다.</p>
+      </div>
+      <span id="itemCount" class="badge">0개 품목</span>
+    </div>
+
+    <div class="info-box section-gap">
+      <strong>구분은 이렇게 사용하세요.</strong>
+      <div class="type-note">
+        <b>주간 식재료</b> = 이번 주 식사에 쓰는 고기·채소·우유 등 ·
+        <b>재고보충</b> = 쌀·기름·양념처럼 매주 사지 않는 것 ·
+        <b>선택소비</b> = 과자·음료·추가 디저트 등 ·
+        <b>생활용품</b> = 휴지·세제처럼 식비에서 분리할 것
+      </div>
+    </div>
+
+    <div class="sticky-summary">
+      <div class="row">
+        <div>
+          <div class="tiny muted">입력하면서 계속 확인</div>
+          <div id="stickyCheckout" class="metric">마트 0원</div>
+        </div>
+        <div style="text-align:right">
+          <div id="stickyFood" style="font-weight:900">식비 0원</div>
+          <div id="stickyGap" class="tiny muted">예산 입력 필요</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="item-head section-gap">
+      <span>품목명</span><span>카테고리</span><span>가격</span><span>수량</span><span>구분</span><span></span>
+    </div>
+    <div id="items"></div>
+
+    <div class="bottom-actions">
+      <button id="addBottomBtn" type="button" class="primary">+ 품목 1개 추가</button>
+      <button id="add5BottomBtn" type="button">+ 빈칸 5개 추가</button>
+    </div>
+    <p class="tiny muted" style="text-align:center;margin-top:7px">최대 60개까지 추가할 수 있습니다.</p>
+  </section>
+
+  <section id="result" class="hidden">
+    <div id="statusCard" class="panel good">
+      <div class="row">
+        <div>
+          <div class="tiny muted">10만 원 장보기 진단</div>
+          <div id="status" class="metric">-</div>
+          <div id="statusSub" class="tiny muted"></div>
+        </div>
+        <div style="text-align:right">
+          <div class="tiny muted">식비 예산 대비</div>
+          <div id="gap" class="metric">-</div>
+        </div>
+      </div>
+      <div class="bar"><div id="progress" class="fill c1" style="width:0%"></div></div>
+      <div class="row tiny muted"><span id="spentText"></span><span id="budgetText"></span></div>
+    </div>
+
+    <div class="grid g4 section-gap">
+      <div class="card"><div class="tiny muted">마트 총 결제액</div><div id="checkoutTotal" class="metric">-</div></div>
+      <div class="card"><div class="tiny muted">식비로 잡힌 금액</div><div id="foodTotal" class="metric">-</div></div>
+      <div class="card"><div class="tiny muted">이번 주 식재료</div><div id="weeklyFood" class="metric">-</div></div>
+      <div class="card"><div class="tiny muted">재고보충·선택소비</div><div id="extraFood" class="metric">-</div></div>
+    </div>
+
+    <div class="panel">
+      <h2>왜 이번 주 결제액이 커졌을까?</h2>
+      <div class="grid g4 section-gap">
+        <div class="card"><div class="tiny muted">주간 식재료</div><div id="typeWeekly" class="metric">-</div></div>
+        <div class="card"><div class="tiny muted">재고보충</div><div id="typeStock" class="metric">-</div></div>
+        <div class="card"><div class="tiny muted">선택소비</div><div id="typeOptional" class="metric">-</div></div>
+        <div class="card"><div class="tiny muted">생활용품</div><div id="typeHousehold" class="metric">-</div></div>
+      </div>
+
+      <div id="reasonBox" class="section-gap"></div>
+    </div>
+
+    <div class="panel">
+      <h2>10만 원, 어떤 조건이면 가능할까?</h2>
+      <p class="tiny muted section-gap">같은 영수증도 무엇을 제외해서 보느냐에 따라 ‘평소 식비’의 모습이 달라집니다.</p>
+      <div class="grid g3 section-gap">
+        <div id="scenarioAllCard" class="card scenario-card">
+          <div class="tiny muted">① 이번 주 식비 전체</div>
+          <div id="scenarioAll" class="metric">-</div>
+          <div id="scenarioAllStatus" class="scenario-status">-</div>
+          <p class="tiny muted section-gap">주간 식재료 + 재고보충 + 선택소비</p>
+        </div>
+        <div id="scenarioNoOptionalCard" class="card scenario-card">
+          <div class="tiny muted">② 선택소비를 빼면</div>
+          <div id="scenarioNoOptional" class="metric">-</div>
+          <div id="scenarioNoOptionalStatus" class="scenario-status">-</div>
+          <p class="tiny muted section-gap">주간 식재료 + 재고보충</p>
+        </div>
+        <div id="scenarioWeeklyCard" class="card scenario-card">
+          <div class="tiny muted">③ 매주 반복 식재료만</div>
+          <div id="scenarioWeekly" class="metric">-</div>
+          <div id="scenarioWeeklyStatus" class="scenario-status">-</div>
+          <p class="tiny muted section-gap">평소 주간 장보기와 비교하기 좋은 금액</p>
+        </div>
+      </div>
+      <div id="scenarioInsight" class="info-box section-gap"></div>
+    </div>
+
+    <div class="grid g4 section-gap">
+      <div class="card"><div class="tiny muted">1인 하루 식재료비</div><div id="perDay" class="metric">-</div></div>
+      <div class="card"><div class="tiny muted">1인 한 끼 재료비</div><div id="perMeal" class="metric">-</div></div>
+      <div class="card"><div class="tiny muted">가장 비싼 품목</div><div id="topItem" class="metric">-</div></div>
+      <div class="card"><div class="tiny muted">선택소비 비중</div><div id="optionalRatio" class="metric">-</div></div>
+    </div>
+
+    <div class="panel">
+      <h2>카테고리별 어디에 많이 썼을까?</h2>
+      <div id="breakdown" class="section-gap"></div>
+    </div>
+
+    <div id="cutPanel" class="panel hidden">
+      <h2>10만 원 안으로 맞추려면</h2>
+      <div id="cutAdvice" class="section-gap"></div>
+    </div>
+
+    <div class="panel">
+      <h2>10만 원 가능 여부를 제대로 보려면</h2>
+      <div id="comparison" class="compare section-gap">
+        <div class="card">
+          <div class="tiny muted">마트 영수증 전체</div>
+          <div id="compareCheckout" class="metric">-</div>
+          <p class="tiny muted section-gap">생활용품·재고보충까지 섞인 실제 결제액</p>
+        </div>
+        <div class="arrow">→</div>
+        <div class="card">
+          <div class="tiny muted">이번 주 순수 식사 재료</div>
+          <div id="compareWeekly" class="metric">-</div>
+          <p class="tiny muted section-gap">매주 반복되는 장보기와 비교하기 좋은 금액</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>이번 장바구니 한줄 진단</h2>
+      <div id="diagnosis" class="section-gap"></div>
+    </div>
+
+    <div class="footer">
+      ※ 상품 가격은 매장·지역·브랜드·행사·용량에 따라 다릅니다. 본 도구는 장보기 예산을 구조적으로 보기 위한 계산기이며 영양학적 권장 식단을 제시하지 않습니다.
+    </div>
+  </section>
+</div>
+
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const money=n=>Math.round(n||0).toLocaleString('ko-KR')+'원';
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const MAX_ROWS=60;
+let rows=[],seq=0;
+
+const cats=['단백질','채소','곡류·주식','달걀·유제품','과일·간식','가공·냉동','기타'];
+const types=[
+  ['weekly','주간 식재료'],
+  ['stock','재고보충'],
+  ['optional','선택소비'],
+  ['household','생활용품']
+];
+
+const STORAGE_KEY='weekly_grocery_100k_v3';
+let saveTimer=null;
+
+function saveState(){
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{
+    try{
+      const state={
+        family:$('family').value,
+        budget:$('budget').value,
+        mealPattern:$('mealPattern').value,
+        customMeals:$('customMeals').value,
+        rows:rows.map(r=>({...r}))
+      };
+      localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
+      $('saveState').textContent='자동 저장됨';
+    }catch(e){
+      $('saveState').textContent='이 브라우저에서는 자동저장 불가';
+    }
+  },250);
+}
+
+function restoreState(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(!raw)return false;
+    const state=JSON.parse(raw);
+    if(!state||!Array.isArray(state.rows)||state.rows.length===0)return false;
+    $('family').value=state.family||'4';
+    $('budget').value=state.budget||'10';
+    $('mealPattern').value=state.mealPattern||'14';
+    $('customMeals').value=state.customMeals||'14';
+    rows=state.rows.slice(0,MAX_ROWS).map(r=>({
+      id:Number(r.id)||++seq,
+      name:r.name||'',
+      cat:cats.includes(r.cat)?r.cat:'기타',
+      price:r.price||'',
+      qty:Number.isFinite(Number(r.qty))?Number(r.qty):1,
+      type:types.some(t=>t[0]===r.type)?r.type:'weekly'
+    }));
+    seq=Math.max(seq,...rows.map(r=>Number(r.id)||0));
+    $('saveState').textContent='이전 입력 복원됨';
+    return true;
+  }catch(e){
+    return false;
+  }
+}
+
+function parseMoney(raw){
+  let s=String(raw??'').trim();
+  if(!s)return 0;
+  s=s.replace(/\s|,/g,'');
+  if(s.includes('-'))return NaN;
+  const man=s.endsWith('만원')||s.endsWith('만');
+  const won=!man&&s.endsWith('원');
+  s=s.replace(/만원$/,'').replace(/만$/,'').replace(/원$/,'');
+  if(!/^\d+(\.\d+)?$/.test(s))return NaN;
+  const n=Number(s);
+  if(man)return n*10000;
+  if(won)return n;
+  // 개별 상품은 1~99를 '만원'으로, 100 이상은 '원'으로 해석
+  return n<=99?n*10000:n;
+}
+
+function parseBudget(raw){
+  let s=String(raw??'').trim();
+  if(!s)return 0;
+  s=s.replace(/\s|,/g,'');
+  if(s.includes('-'))return NaN;
+  const man=s.endsWith('만원')||s.endsWith('만');
+  const won=!man&&s.endsWith('원');
+  s=s.replace(/만원$/,'').replace(/만$/,'').replace(/원$/,'');
+  if(!/^\d+(\.\d+)?$/.test(s))return NaN;
+  const n=Number(s);
+  if(man)return n*10000;
+  if(won)return n;
+  // 장보기 예산은 10, 15, 20, 100처럼 입력하는 경우 모두 만원 단위가 자연스러움
+  return n<=999?n*10000:n;
+}
+
+function budget(){return parseBudget($('budget').value)}
+
+function budgetHint(){
+  const v=budget();
+  $('budgetHint').innerHTML=Number.isFinite(v)&&v>0?'→ <strong>'+money(v)+'</strong>':'금액을 확인해주세요.';
+}
+
+function mealsPerWeek(){
+  const pattern=$('mealPattern').value;
+  if(pattern==='custom'){
+    return Math.max(1,Math.min(21,Number($('customMeals').value)||1));
+  }
+  return Math.max(1,Math.min(21,Number(pattern)||14));
+}
+
+function updateMealPattern(){
+  const custom=$('mealPattern').value==='custom';
+  $('customMealsWrap').classList.toggle('hidden',!custom);
+
+  const weekly=mealsPerWeek();
+  const monthly=Math.round(weekly*52/12);
+  const text=`주 ${weekly}회 · 월 약 ${monthly}회`;
+
+  $('mealPatternHint').textContent=text;
+  $('customMealsHint').textContent=text;
+}
+
+function rowHTML(r){
+  return `<div class="item-row" data-id="${r.id}">
+    <label data-label="품목명"><input class="name" type="text" value="${escapeHtml(r.name||'')}" placeholder="예: 달걀"></label>
+    <label data-label="카테고리"><select class="cat">${cats.map(c=>`<option ${c===r.cat?'selected':''}>${c}</option>`).join('')}</select></label>
+    <label data-label="가격"><input class="price" type="text" inputmode="decimal" value="${escapeHtml(r.price||'')}" placeholder="예: 8000"></label>
+    <label data-label="수량"><input class="qty" type="number" min="0" step="1" value="${r.qty===0?0:(r.qty||1)}"></label>
+    <label data-label="구분"><select class="type">${types.map(([v,t])=>`<option value="${v}" ${v===r.type?'selected':''}>${t}</option>`).join('')}</select></label>
+    <button type="button" class="remove" aria-label="품목 삭제">삭제</button>
+  </div>`;
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+}
+function render(){
+  $('items').innerHTML=rows.map(rowHTML).join('');
+  $('itemCount').textContent=rows.length+'개 품목';
+  recalc();
+  saveState();
+}
+function add(name='',cat='기타',price='',qty=1,type='weekly',rerender=true){
+  if(rows.length>=MAX_ROWS)return false;
+  rows.push({id:++seq,name,cat,price,qty,type});
+  if(rerender)render();
+  return true;
+}
+function addMany(n){
+  syncFromDom();
+  const room=MAX_ROWS-rows.length;
+  const count=Math.min(n,room);
+  for(let i=0;i<count;i++)add('', '기타','',1,'weekly',false);
+  render();
+  setTimeout(()=>{
+    const all=document.querySelectorAll('.item-row .name');
+    if(all.length)all[Math.max(0,all.length-count)].focus();
+  },0);
+}
+function loadSample(){
+  rows=[];seq=0;
+  const sample=[
+    ['달걀 30구','달걀·유제품','8000',1,'weekly'],
+    ['두부','단백질','2000',2,'weekly'],
+    ['돼지고기 앞다리 1kg','단백질','13000',1,'weekly'],
+    ['닭고기 1kg','단백질','8000',1,'weekly'],
+    ['고등어','단백질','7000',1,'weekly'],
+    ['양파 2kg','채소','4000',1,'weekly'],
+    ['대파','채소','3000',1,'weekly'],
+    ['양배추','채소','4000',1,'weekly'],
+    ['감자 2kg','채소','7000',1,'weekly'],
+    ['당근','채소','4000',1,'weekly'],
+    ['콩나물','채소','1500',2,'weekly'],
+    ['애호박','채소','1500',2,'weekly'],
+    ['버섯','채소','2000',2,'weekly'],
+    ['우유 2L','달걀·유제품','6000',1,'weekly'],
+    ['과일','과일·간식','10000',1,'optional'],
+    ['식빵·간단 아침','가공·냉동','5000',1,'optional']
+  ];
+  sample.forEach(x=>add(x[0],x[1],x[2],x[3],x[4],false));
+  render();
+}
+function syncFromDom(){
+  document.querySelectorAll('.item-row').forEach(el=>{
+    const id=Number(el.dataset.id);
+    const r=rows.find(x=>x.id===id);
+    if(!r)return;
+    r.name=el.querySelector('.name').value;
+    r.cat=el.querySelector('.cat').value;
+    r.price=el.querySelector('.price').value;
+    r.qty=Number(el.querySelector('.qty').value)||0;
+    r.type=el.querySelector('.type').value;
+  });
+}
+
+function recalc(){
+  budgetHint();
+  syncFromDom();
+  const b=budget();
+  const family=Number($('family').value)||1;
+  updateMealPattern();
+  const meals=mealsPerWeek();
+
+  const items=rows.map(r=>{
+    const p=parseMoney(r.price);
+    return {...r,unit:Number.isFinite(p)?p:0,total:(Number.isFinite(p)?p:0)*(r.qty||0)};
+  }).filter(r=>r.name||r.total>0);
+
+  const totals={weekly:0,stock:0,optional:0,household:0};
+  items.forEach(x=>totals[x.type]=(totals[x.type]||0)+x.total);
+
+  const checkout=items.reduce((a,x)=>a+x.total,0);
+  const foodTotal=checkout-totals.household;
+  const repeatWeekly=totals.weekly;
+  const extraFood=totals.stock+totals.optional;
+
+  $('topTotal').textContent=money(checkout);
+  $('topFood').textContent='식비 '+money(foodTotal)+' · 순수 주간재료 '+money(repeatWeekly);
+
+  $('stickyCheckout').textContent='마트 '+money(checkout);
+  $('stickyFood').textContent='식비 '+money(foodTotal);
+  if(Number.isFinite(b)&&b>0){
+    const stickyGap=b-foodTotal;
+    $('stickyGap').textContent=stickyGap>=0?'예산 '+money(stickyGap)+' 남음':'예산 '+money(Math.abs(stickyGap))+' 초과';
+    $('stickyGap').style.color=stickyGap>=0?'var(--good)':'var(--bad)';
+  }else{
+    $('stickyGap').textContent='예산 입력 필요';
+    $('stickyGap').style.color='var(--muted)';
+  }
+
+  const ready=Number.isFinite(b)&&b>0&&items.length>0;
+  $('result').classList.toggle('hidden',!ready);
+  if(!ready)return;
+
+  // 10만원 도전은 생활용품을 제외한 식비 총액 기준
+  const gap=b-foodTotal;
+  const ratio=foodTotal/b;
+  let status,sub,cls;
+
+  if(ratio<=.85){
+    status='10만 원 안에서 여유가 있습니다';
+    sub='식비만 분리해 보면 예산에 여유가 있습니다. 남는 돈을 억지로 채울 필요는 없습니다.';
+    cls='good';
+  }else if(ratio<=1){
+    status='10만 원 안에 들어왔습니다';
+    sub='생활용품을 제외한 식비 기준으로 예산 범위 안입니다.';
+    cls='good';
+  }else if(ratio<=1.15){
+    status='조금 넘었습니다';
+    sub='선택소비나 재고보충 중 한두 항목만 조정하면 10만 원에 가까워질 수 있습니다.';
+    cls='warn';
+  }else{
+    status='이번 주는 10만 원이 빠듯합니다';
+    sub='무조건 실패라고 보기보다 재고보충·선택소비가 얼마나 섞였는지 먼저 확인해보세요.';
+    cls='bad';
+  }
+
+  $('statusCard').className='panel '+cls;
+  $('status').textContent=status;
+  $('statusSub').textContent=sub;
+  $('gap').textContent=gap>=0?'남음 '+money(gap):'초과 '+money(Math.abs(gap));
+  $('progress').style.width=clamp(foodTotal/b*100,0,100)+'%';
+  $('spentText').textContent='식비 '+money(foodTotal);
+  $('budgetText').textContent='예산 '+money(b);
+
+  $('checkoutTotal').textContent=money(checkout);
+  $('foodTotal').textContent=money(foodTotal);
+  $('weeklyFood').textContent=money(repeatWeekly);
+  $('extraFood').textContent=money(extraFood);
+
+  $('typeWeekly').textContent=money(totals.weekly);
+  $('typeStock').textContent=money(totals.stock);
+  $('typeOptional').textContent=money(totals.optional);
+  $('typeHousehold').textContent=money(totals.household);
+
+  $('perDay').textContent=money(repeatWeekly/family/7);
+  $('perMeal').textContent=money(repeatWeekly/family/meals);
+
+  const foodItems=items.filter(x=>x.type!=='household');
+  const top=[...items].sort((a,b)=>b.total-a.total)[0];
+  $('topItem').textContent=top?top.name:'-';
+  $('optionalRatio').textContent=foodTotal>0?(totals.optional/foodTotal*100).toFixed(0)+'%':'0%';
+
+  const byCat={};
+  foodItems.forEach(x=>byCat[x.cat]=(byCat[x.cat]||0)+x.total);
+  const catsSorted=Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
+  $('breakdown').innerHTML=catsSorted.map(([c,v],i)=>`
+    <div class="breakdown-row">
+      <div class="row tiny"><strong>${c}</strong><span>${money(v)} · ${(v/Math.max(1,foodTotal)*100).toFixed(0)}%</span></div>
+      <div class="bar"><div class="fill c${(i%5)+1}" style="width:${clamp(v/Math.max(1,foodTotal)*100,0,100)}%"></div></div>
+    </div>`).join('');
+
+  // 왜 비싸졌는지
+  const reasonParts=[];
+  if(totals.stock>0)reasonParts.push(`재고보충 <strong>${money(totals.stock)}</strong>`);
+  if(totals.optional>0)reasonParts.push(`선택소비 <strong>${money(totals.optional)}</strong>`);
+  if(totals.household>0)reasonParts.push(`생활용품 <strong>${money(totals.household)}</strong>`);
+  if(reasonParts.length){
+    $('reasonBox').innerHTML=`<div class="info-box">이번 마트 결제액에는 ${reasonParts.join(', ')}이 섞여 있습니다. 그래서 <strong>영수증 전체 ${money(checkout)}</strong>만 보고 평소 주간 식비와 비교하면 체감이 왜곡될 수 있습니다.</div>`;
+  }else{
+    $('reasonBox').innerHTML=`<div class="goodbox">이번 장바구니는 거의 전부 주간 식재료입니다. 다른 주와 비교하기 좋은 구조입니다.</div>`;
+  }
+
+  // 같은 영수증을 3가지 조건으로 비교해 포스팅의 핵심 메시지를 바로 보여줌
+  const scenarioAll=foodTotal;
+  const scenarioNoOptional=totals.weekly+totals.stock;
+  const scenarioWeekly=totals.weekly;
+
+  function paintScenario(cardId,valueId,statusId,val){
+    $(valueId).textContent=money(val);
+    const card=$(cardId), statusEl=$(statusId);
+    const rr=val/b;
+    card.classList.remove('pass','near','fail');
+    statusEl.classList.remove('pass-text','near-text','fail-text');
+    if(rr<=1){
+      card.classList.add('pass');
+      statusEl.classList.add('pass-text');
+      statusEl.textContent='10만 원 가능 · '+money(b-val)+' 여유';
+    }else if(rr<=1.1){
+      card.classList.add('near');
+      statusEl.classList.add('near-text');
+      statusEl.textContent='조금 초과 · '+money(val-b);
+    }else{
+      card.classList.add('fail');
+      statusEl.classList.add('fail-text');
+      statusEl.textContent='10만 원 초과 · '+money(val-b);
+    }
+  }
+
+  paintScenario('scenarioAllCard','scenarioAll','scenarioAllStatus',scenarioAll);
+  paintScenario('scenarioNoOptionalCard','scenarioNoOptional','scenarioNoOptionalStatus',scenarioNoOptional);
+  paintScenario('scenarioWeeklyCard','scenarioWeekly','scenarioWeeklyStatus',scenarioWeekly);
+
+  if(scenarioAll>b && scenarioNoOptional<=b){
+    $('scenarioInsight').innerHTML=`이번 주 10만 원을 넘긴 핵심 원인은 <strong>선택소비 ${money(totals.optional)}</strong>입니다. 선택소비를 빼면 식비가 <strong>${money(scenarioNoOptional)}</strong>으로 예산 안에 들어옵니다.`;
+  }else if(scenarioAll>b && scenarioWeekly<=b && totals.stock>0){
+    $('scenarioInsight').innerHTML=`선택소비를 빼도 ${money(scenarioNoOptional)}이지만, 재고보충까지 분리하면 평소 반복 식재료는 <strong>${money(scenarioWeekly)}</strong>입니다. <strong>이번 주가 비싼 이유는 재고보충이 겹쳤기 때문</strong>입니다.`;
+  }else if(scenarioWeekly>b){
+    $('scenarioInsight').innerHTML=`재고보충과 선택소비를 모두 빼도 주간 식재료가 <strong>${money(scenarioWeekly)}</strong>입니다. 이번 주는 실제 식사 재료만으로도 10만 원이 빠듯한 주입니다.`;
+  }else{
+    $('scenarioInsight').innerHTML=`이번 장바구니는 주간 반복 식재료가 <strong>${money(scenarioWeekly)}</strong>으로 예산 안에 있습니다. 최종 영수증이 커지는지는 재고보충·선택소비가 얼마나 섞이는지에 달려 있습니다.`;
+  }
+
+  // 예산 초과 시 선택소비 → 재고보충 순으로 조정 후보 제시
+  const over=Math.max(0,foodTotal-b);
+  $('cutPanel').classList.toggle('hidden',over<=0);
+  if(over>0){
+    const candidates=[
+      ...items.filter(x=>x.type==='optional'&&x.total>0).sort((a,b)=>b.total-a.total),
+      ...items.filter(x=>x.type==='stock'&&x.total>0).sort((a,b)=>b.total-a.total)
+    ];
+    let remain=over,picks=[];
+    for(const x of candidates){
+      if(remain<=0)break;
+      const cut=Math.min(x.total,remain);
+      picks.push({name:x.name,cut,type:x.type});
+      remain-=cut;
+    }
+
+    let text=`현재 식비 예산보다 <strong>${money(over)}</strong> 초과했습니다. `;
+    if(picks.length){
+      text+='먼저 ';
+      text+=picks.map(x=>`<strong>${x.name} ${money(x.cut)}</strong>`).join(' + ');
+      text+=' 정도를 이번 주에서 빼거나 다음 구매로 미루면 예산에 가까워집니다.';
+    }else{
+      text+='선택소비나 재고보충으로 표시된 품목이 없습니다. 주간 식재료 자체가 10만 원을 넘는 주라면 예산을 억지로 맞추기보다 식단·구매처·단위가격을 다시 보는 편이 낫습니다.';
+    }
+    if(remain>0)text+=` 그래도 약 <strong>${money(remain)}</strong>이 남기 때문에 이번 주는 10만 원 자체가 낮게 잡힌 편입니다.`;
+    $('cutAdvice').innerHTML=`<div class="warnbox">${text}</div>`;
+  }
+
+  $('compareCheckout').textContent=money(checkout);
+  $('compareWeekly').textContent=money(repeatWeekly);
+
+  const topCat=catsSorted[0];
+  let conclusion='';
+  if(repeatWeekly<=b && foodTotal>b && totals.stock>0){
+    conclusion=`이번 주 식비는 ${money(foodTotal)}이지만, 매주 반복되는 주간 식재료만 보면 ${money(repeatWeekly)}입니다. <strong>10만 원을 넘긴 주된 이유는 재고보충이 섞였기 때문</strong>입니다.`;
+  }else if(repeatWeekly<=b && checkout>b && totals.household>0){
+    conclusion=`마트 영수증은 ${money(checkout)}이지만 생활용품을 빼고 주간 식재료만 보면 ${money(repeatWeekly)}입니다. <strong>마트 결제액과 식비를 분리해서 보는 게 맞습니다.</strong>`;
+  }else if(repeatWeekly>b){
+    conclusion=`재고보충과 생활용품을 빼도 주간 식재료가 ${money(repeatWeekly)}입니다. 이번 주는 실제 식사 재료만으로도 10만 원이 빠듯한 구조입니다.`;
+  }else{
+    conclusion=`주간 식재료가 ${money(repeatWeekly)}으로 현재 예산 범위 안입니다. 재고보충이나 선택소비를 어떻게 관리하느냐에 따라 최종 영수증이 달라지는 구조입니다.`;
+  }
+
+  $('diagnosis').innerHTML=`
+    <p>${conclusion}</p>
+    <p style="margin-top:8px">이번 장바구니에서 가장 큰 식품 카테고리는 <strong>${topCat?topCat[0]:'-'}</strong>이며 식비의 약 <strong>${topCat?(topCat[1]/Math.max(1,foodTotal)*100).toFixed(0):0}%</strong>입니다.</p>
+    <p style="margin-top:8px">4인 가족의 매주 반복되는 식재료만 기준으로 보면 1인 하루 약 <strong>${money(repeatWeekly/family/7)}</strong>, 집에서 먹는 식사가 주 ${meals}회인 패턴 기준 1인 한 끼 약 <strong>${money(repeatWeekly/family/meals)}</strong>입니다.</p>
+  `;
+  saveState();
+}
+
+$('items').addEventListener('input',recalc);
+$('items').addEventListener('change',recalc);
+$('items').addEventListener('click',e=>{
+  const btn=e.target.closest('.remove');
+  if(!btn)return;
+  const id=Number(btn.closest('.item-row').dataset.id);
+  rows=rows.filter(x=>x.id!==id);
+  render();
+});
+
+['family','budget','mealPattern','customMeals'].forEach(id=>{
+  $(id).addEventListener('input',recalc);
+  $(id).addEventListener('change',recalc);
+});
+
+function addSingle(){
+  syncFromDom();
+  if(add('', '기타','',1,'weekly',true)){
+    setTimeout(()=>{
+      const all=document.querySelectorAll('.item-row .name');
+      if(all.length)all[all.length-1].focus();
+    },0);
+  }
+}
+
+$('addBtn').addEventListener('click',addSingle);
+$('addBottomBtn').addEventListener('click',addSingle);
+$('add5Btn').addEventListener('click',()=>addMany(5));
+$('add5BottomBtn').addEventListener('click',()=>addMany(5));
+
+$('sampleBtn').addEventListener('click',loadSample);
+$('riceBtn').addEventListener('click',()=>{
+  syncFromDom();
+  add('쌀 10kg','곡류·주식','34202',1,'stock',true);
+});
+$('clearBtn').addEventListener('click',()=>{
+  rows=[];seq=0;
+  try{localStorage.removeItem(STORAGE_KEY)}catch(e){}
+  $('saveState').textContent='입력내용 자동 저장';
+  render();
+});
+
+document.querySelectorAll('.quick').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    syncFromDom();
+    add(btn.dataset.name,btn.dataset.cat,'',1,btn.dataset.type,true);
+    setTimeout(()=>{
+      const all=document.querySelectorAll('.item-row .price');
+      if(all.length)all[all.length-1].focus();
+    },0);
+  });
+});
+
+updateMealPattern();
+if(restoreState()){
+  updateMealPattern();
+  render();
+}else{
+  loadSample();
+}
+})();
+</script>
+</body>
+</html>
