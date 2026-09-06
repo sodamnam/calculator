@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>자동결제 새는 돈 계산기</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--text:#17191f;--muted:#6b7280;--line:#e5e7eb;--blue:#2563eb;--soft:#eff6ff;--green:#15803d;--amber:#d97706;--red:#dc2626}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",Arial,sans-serif;line-height:1.55}
+.wrap{max-width:1120px;margin:auto;padding:24px 16px 56px}h1{font-size:28px;line-height:1.25;margin:0 0 8px}h2{font-size:19px;margin:0}p{margin:0}.muted{color:var(--muted)}.tiny{font-size:12px}
+.panel,.card{background:#fff;border:1px solid var(--line);border-radius:18px}.panel{padding:18px;margin-top:14px}.card{padding:14px}.smart{margin-top:12px;padding:12px 14px;background:var(--soft);border:1px solid #dbeafe;border-radius:14px;font-size:13px}
+.grid{display:grid;gap:12px}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}.row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.metric{font-size:25px;font-weight:900;letter-spacing:-.03em}.section{margin-top:14px}
+input,select,button{font:inherit}input,select{width:100%;min-height:44px;border:1px solid var(--line);border-radius:11px;padding:0 11px;background:#fff;color:var(--text)}
+button{min-height:42px;border:1px solid var(--line);border-radius:999px;background:#fff;padding:8px 13px;font-weight:800;cursor:pointer;color:var(--text)}button.primary{background:var(--blue);border-color:var(--blue);color:#fff}button.danger{color:var(--red)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:var(--soft);color:var(--blue);font-size:11px;font-weight:900}
+.item-head,.item-row{display:grid;grid-template-columns:1.25fr .9fr .8fr .85fr .9fr .75fr auto;gap:8px;align-items:end}.item-head{font-size:11px;color:var(--muted);font-weight:800;padding:0 0 6px;border-bottom:1px solid var(--line)}
+.item-row{padding:10px 0;border-bottom:1px solid #f0f1f3}.item-row:last-child{border-bottom:0}.item-row label{font-size:11px;color:var(--muted)}.item-row input,.item-row select{margin-top:3px}.remove{min-width:42px;padding:6px 9px;color:var(--red)}
+.hint{font-size:11px;color:var(--muted);margin-top:3px;min-height:17px}.hint strong{color:var(--blue)}.bar{height:10px;background:#edf0f4;border-radius:999px;overflow:hidden;margin-top:7px}.fill{height:100%;background:var(--blue);border-radius:999px}
+.warn{background:#fffbeb;border:1px solid #fde68a;border-radius:14px;padding:13px}.good{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:14px;padding:13px}.info{background:#f8fafc;border:1px solid var(--line);border-radius:14px;padding:13px}.hidden{display:none!important}
+.check{display:flex;gap:7px;align-items:center;font-size:12px;font-weight:800}.check input{width:auto;min-height:auto}
+@media(max-width:900px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.item-head{display:none}.item-row{grid-template-columns:1fr 1fr!important}}
+@media(max-width:600px){.g4,.item-row{grid-template-columns:1fr!important}.metric{font-size:22px}h1{font-size:24px}.item-row label:before{content:attr(data-label);display:block;font-size:11px;color:var(--muted);margin-bottom:2px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>자동결제 새는 돈 계산기</h1>
+<p class="muted">매달·매년 나가는 정기결제를 월 기준으로 환산하고, 해지 후보를 고르면 1년 절약액까지 계산합니다.</p>
+
+<div class="smart"><strong>처음에는 모두 빈 상태입니다.</strong> 실제 카드·계좌·앱 구독내역을 보면서 하나씩 넣어보세요. 금액은 <b>9900</b> → 9,900원 · <b>1.5만</b> → 15,000원처럼 입력할 수 있습니다.</div>
+
+<section class="panel">
+<div class="row"><div><h2>1. 정기결제를 하나씩 입력하세요</h2><p class="tiny muted section">OTT·음악·클라우드·멤버십·앱·운동·교육 등 반복결제를 넣으면 됩니다.</p></div><span id="count" class="badge">0개 등록</span></div>
+<div class="actions"><button id="addBtn" class="primary" type="button">+ 정기결제 추가</button><button id="add5Btn" type="button">+ 빈칸 5개</button><button id="sampleBtn" type="button">예시로 보기</button><button id="resetBtn" class="danger" type="button">전체 초기화</button></div>
+<div class="item-head section"><span>서비스명</span><span>분류</span><span>결제금액</span><span>결제주기</span><span>사용상태</span><span>해지 후보</span><span></span></div>
+<div id="items"></div>
+</section>
+
+<section id="results" class="hidden">
+<div class="grid g4 section">
+<div class="card"><div class="tiny muted">월 환산 자동결제</div><div id="monthly" class="metric">-</div></div>
+<div class="card"><div class="tiny muted">1년이면</div><div id="annual" class="metric">-</div></div>
+<div class="card"><div class="tiny muted">해지 후보 월 절약</div><div id="saveMonthly" class="metric">-</div></div>
+<div class="card"><div class="tiny muted">해지 후보 연 절약</div><div id="saveAnnual" class="metric">-</div></div>
+</div>
+
+<div class="panel"><h2>2. 어디서 새고 있을까?</h2><div id="statusBox" class="section"></div><div id="breakdown" class="section"></div></div>
+<div class="panel"><h2>3. 먼저 확인할 자동결제</h2><div id="priority" class="section"></div></div>
+<div class="panel"><h2>4. 해지 후보를 실제로 정리하면</h2><div id="scenario" class="section"></div></div>
+<div class="panel"><h2>계산 결과를 볼 때 주의할 점</h2><div class="info section">자동으로 ‘거의 안 씀’을 해지 후보로 체크하지는 않습니다. 가족공유, 백업, 업무용처럼 사용 빈도는 낮아도 꼭 필요한 서비스가 있을 수 있기 때문입니다. 실제 해지 여부는 직접 판단하고 <b>해지 후보</b>에 체크하세요.</div></div>
+</section>
+</div>
+
+<script>
+(()=>{
+const $=id=>document.getElementById(id), money=n=>Math.round(n||0).toLocaleString('ko-KR')+'원';
+let rows=[],seq=0; const MAX=60;
+const cats=['OTT·영상','음악','쇼핑·멤버십','클라우드·저장공간','앱·소프트웨어','운동·건강','교육·콘텐츠','게임','기타'];
+const cycles=[['monthly','매월'],['yearly','매년'],['quarter','3개월마다'],['half','6개월마다'],['weekly','매주']];
+const uses=[['often','자주 씀'],['sometimes','가끔 씀'],['rare','거의 안 씀'],['unknown','기억 안 남'],['must','유지 필요']];
+
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function parseMoney(raw){let s=String(raw??'').trim().replace(/\s|,/g,'');if(!s)return 0;if(s.includes('-'))return NaN;const man=s.endsWith('만원')||s.endsWith('만'),won=!man&&s.endsWith('원');s=s.replace(/만원$/,'').replace(/만$/,'').replace(/원$/,'');if(!/^\d+(\.\d+)?$/.test(s))return NaN;const n=Number(s);if(man)return n*10000;if(won)return n;return n<=99?n*10000:n}
+function monthlyEq(a,c){if(c==='yearly')return a/12;if(c==='quarter')return a/3;if(c==='half')return a/6;if(c==='weekly')return a*52/12;return a}
+function rowHTML(r){return `<div class="item-row" data-id="${r.id}">
+<label data-label="서비스명"><input class="name" value="${esc(r.name)}" placeholder="예: 영상 구독"></label>
+<label data-label="분류"><select class="cat">${cats.map(c=>`<option ${c===r.cat?'selected':''}>${c}</option>`).join('')}</select></label>
+<label data-label="결제금액"><input class="amount" inputmode="decimal" value="${esc(r.amount)}" placeholder="예: 9900"><div class="hint amountHint"></div></label>
+<label data-label="결제주기"><select class="cycle">${cycles.map(([v,t])=>`<option value="${v}" ${v===r.cycle?'selected':''}>${t}</option>`).join('')}</select></label>
+<label data-label="사용상태"><select class="use">${uses.map(([v,t])=>`<option value="${v}" ${v===r.use?'selected':''}>${t}</option>`).join('')}</select></label>
+<label data-label="해지 후보"><span class="check"><input class="cancel" type="checkbox" ${r.cancel?'checked':''}> 후보로 선택</span></label>
+<button class="remove" type="button">삭제</button></div>`}
+
+function render(){$('items').innerHTML=rows.map(rowHTML).join('');$('count').textContent=rows.length+'개 등록';recalc()}
+function add(data={},rerender=true){if(rows.length>=MAX)return;rows.push({id:++seq,name:data.name||'',cat:data.cat||'기타',amount:data.amount||'',cycle:data.cycle||'monthly',use:data.use||'often',cancel:!!data.cancel});if(rerender)render()}
+function sync(){document.querySelectorAll('.item-row').forEach(el=>{const r=rows.find(x=>x.id===Number(el.dataset.id));if(!r)return;r.name=el.querySelector('.name').value;r.cat=el.querySelector('.cat').value;r.amount=el.querySelector('.amount').value;r.cycle=el.querySelector('.cycle').value;r.use=el.querySelector('.use').value;r.cancel=el.querySelector('.cancel').checked;const p=parseMoney(r.amount);el.querySelector('.amountHint').innerHTML=Number.isFinite(p)&&p>0?'→ <strong>'+money(p)+'</strong>':''})}
+
+function recalc(){
+sync();
+const valid=rows.map(r=>{const a=parseMoney(r.amount),m=Number.isFinite(a)?monthlyEq(a,r.cycle):0;return {...r,monthly:m}}).filter(r=>r.name||r.monthly>0);
+$('results').classList.toggle('hidden',valid.length===0);if(!valid.length)return;
+const monthly=valid.reduce((a,x)=>a+x.monthly,0), cancel=valid.filter(x=>x.cancel), save=cancel.reduce((a,x)=>a+x.monthly,0);
+$('monthly').textContent=money(monthly);$('annual').textContent=money(monthly*12);$('saveMonthly').textContent=money(save);$('saveAnnual').textContent=money(save*12);
+$('statusBox').innerHTML=save>0?`<div class="good">현재 해지 후보는 월 <strong>${money(save)}</strong>, 1년 단순 환산 <strong>${money(save*12)}</strong>입니다. 전체 정기결제의 약 <strong>${(save/Math.max(1,monthly)*100).toFixed(0)}%</strong>입니다.</div>`:`<div class="info">아직 해지 후보를 고르지 않았습니다. ‘거의 안 씀’이나 ‘기억 안 남’ 항목부터 필요 여부를 확인해보세요.</div>`;
+
+const byCat={};valid.forEach(x=>byCat[x.cat]=(byCat[x.cat]||0)+x.monthly);
+$('breakdown').innerHTML=Object.entries(byCat).sort((a,b)=>b[1]-a[1]).map(([c,v])=>`<div style="margin-bottom:11px"><div class="row tiny"><strong>${c}</strong><span>${money(v)} · ${(v/monthly*100).toFixed(0)}%</span></div><div class="bar"><div class="fill" style="width:${Math.min(100,v/monthly*100)}%"></div></div></div>`).join('');
+
+const dup={};valid.forEach(x=>{if(x.cat!=='기타')dup[x.cat]=(dup[x.cat]||0)+1});
+let pri=[];
+valid.filter(x=>x.use==='rare'||x.use==='unknown').sort((a,b)=>b.monthly-a.monthly).slice(0,4).forEach(x=>pri.push(`<div class="warn" style="margin-bottom:9px"><strong>${esc(x.name||x.cat)}</strong> · 월 환산 ${money(x.monthly)}<br><span class="tiny">${x.use==='unknown'?'사용 여부가 기억나지 않음':'거의 사용하지 않는다고 표시'} → 해지·일시중지·요금제 하향 여부 확인</span></div>`));
+Object.entries(dup).filter(([,n])=>n>=2).forEach(([c,n])=>pri.push(`<div class="info" style="margin-bottom:9px"><strong>${c}</strong> 항목이 ${n}개 있습니다.<br><span class="tiny">같은 용도의 서비스가 겹치는지 확인해보세요.</span></div>`));
+if(!pri.length)pri.push(`<div class="good">현재 입력 기준으로 눈에 띄는 저사용·중복 항목이 없습니다. 실제 최근 사용내역은 한 번 확인해보세요.</div>`);
+$('priority').innerHTML=pri.slice(0,6).join('');
+
+$('scenario').innerHTML=cancel.length?`<div class="good"><strong>${cancel.map(x=>esc(x.name||x.cat)).join(', ')}</strong><br><br>정리하면 월 자동결제가 <strong>${money(monthly)} → ${money(monthly-save)}</strong>로 줄고, 1년 단순 환산 절약액은 <strong>${money(save*12)}</strong>입니다.</div>`:`<div class="info">해지 후보를 체크하면 ‘현재 → 정리 후’ 월 자동결제와 연간 절약액이 계산됩니다.</div>`;
+}
+
+$('items').addEventListener('input',recalc);$('items').addEventListener('change',recalc);
+$('items').addEventListener('click',e=>{const b=e.target.closest('.remove');if(!b)return;rows=rows.filter(x=>x.id!==Number(b.closest('.item-row').dataset.id));render()});
+$('addBtn').addEventListener('click',()=>{sync();add();setTimeout(()=>{const a=document.querySelectorAll('.name');if(a.length)a[a.length-1].focus()},0)});
+$('add5Btn').addEventListener('click',()=>{sync();for(let i=0;i<5&&rows.length<MAX;i++)add({},false);render()});
+$('sampleBtn').addEventListener('click',()=>{rows=[];seq=0;[
+{name:'영상 구독 A',cat:'OTT·영상',amount:'13900',use:'often'},
+{name:'영상 구독 B',cat:'OTT·영상',amount:'7900',use:'rare',cancel:true},
+{name:'음악 서비스',cat:'음악',amount:'10900',use:'often'},
+{name:'쇼핑 멤버십',cat:'쇼핑·멤버십',amount:'4990',use:'sometimes'},
+{name:'클라우드 저장공간',cat:'클라우드·저장공간',amount:'3900',use:'must'},
+{name:'예전에 결제한 앱',cat:'앱·소프트웨어',amount:'9900',use:'unknown',cancel:true}
+].forEach(x=>add(x,false));render()});
+$('resetBtn').addEventListener('click',()=>{rows=[];seq=0;render()});
+rows=[];seq=0;render();
+})();
+</script>
+</body>
+</html>
