@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>4인 가족 일주일 장보기 10만원 계산기 FINAL V3</title>
+<title>4인 가족 일주일 장보기 10만원 계산기 FINAL V4 RESET</title>
 <style>
 :root{
   --bg:#f6f7f9;--card:#fff;--text:#17191f;--muted:#6b7280;--border:#e5e7eb;
@@ -72,24 +72,26 @@ button:hover{background:#f9fafb}.primary{background:var(--accent);border-color:v
     <div class="grid g4 section-gap">
       <label>가족 수
         <select id="family">
+          <option value="" selected>선택</option>
           <option value="1">1명</option><option value="2">2명</option><option value="3">3명</option>
-          <option value="4" selected>4명</option><option value="5">5명</option><option value="6">6명 이상</option>
+          <option value="4">4명</option><option value="5">5명</option><option value="6">6명 이상</option>
         </select>
       </label>
       <label>주간 식비 예산
-        <input id="budget" type="text" inputmode="decimal" value="10">
+        <input id="budget" type="text" inputmode="decimal" placeholder="예: 10">
         <div id="budgetHint" class="hint"></div>
       </label>
       <label>집에서 먹는 식사 패턴
         <select id="mealPattern">
+          <option value="" selected>선택</option>
           <option value="7">하루 1끼 정도</option>
-          <option value="14" selected>하루 2끼 정도</option>
+          <option value="14">하루 2끼 정도</option>
           <option value="21">하루 3끼 모두</option>
           <option value="9">평일 1끼 + 주말 2끼</option>
           <option value="16">평일 2끼 + 주말 3끼</option>
           <option value="custom">직접 입력</option>
         </select>
-        <div id="mealPatternHint" class="hint">주 14회 · 월 약 61회</div>
+        <div id="mealPatternHint" class="hint">식사 패턴을 선택해주세요.</div>
       </label>
       <div class="card">
         <div class="tiny muted">마트 예상 결제액</div>
@@ -100,8 +102,8 @@ button:hover{background:#f9fafb}.primary{background:var(--accent);border-color:v
 
     <div id="customMealsWrap" class="section-gap hidden" style="max-width:320px">
       <label>일주일 집밥 횟수 직접 입력
-        <input id="customMeals" type="number" min="1" max="21" value="14">
-        <div id="customMealsHint" class="hint">주 14회 · 월 약 61회</div>
+        <input id="customMeals" type="number" min="1" max="21" placeholder="예: 14">
+        <div id="customMealsHint" class="hint"></div>
       </label>
     </div>
 
@@ -111,7 +113,6 @@ button:hover{background:#f9fafb}.primary{background:var(--accent);border-color:v
       <button id="addBtn" type="button" class="primary">+ 품목 1개 추가</button>
       <button id="add5Btn" type="button">+ 빈칸 5개 추가</button>
       <button id="clearBtn" type="button">전체 비우기</button>
-      <span id="saveState" class="save-state">입력내용 자동 저장</span>
     </div>
 
     <div class="quick-grid">
@@ -294,51 +295,14 @@ const types=[
 ];
 
 const STORAGE_KEY='weekly_grocery_100k_v3';
-let saveTimer=null;
 
 function saveState(){
-  clearTimeout(saveTimer);
-  saveTimer=setTimeout(()=>{
-    try{
-      const state={
-        family:$('family').value,
-        budget:$('budget').value,
-        mealPattern:$('mealPattern').value,
-        customMeals:$('customMeals').value,
-        rows:rows.map(r=>({...r}))
-      };
-      localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
-      $('saveState').textContent='자동 저장됨';
-    }catch(e){
-      $('saveState').textContent='이 브라우저에서는 자동저장 불가';
-    }
-  },250);
+  // 공개용 초기화 버전: 브라우저 저장 기능을 사용하지 않습니다.
 }
 
 function restoreState(){
-  try{
-    const raw=localStorage.getItem(STORAGE_KEY);
-    if(!raw)return false;
-    const state=JSON.parse(raw);
-    if(!state||!Array.isArray(state.rows)||state.rows.length===0)return false;
-    $('family').value=state.family||'4';
-    $('budget').value=state.budget||'10';
-    $('mealPattern').value=state.mealPattern||'14';
-    $('customMeals').value=state.customMeals||'14';
-    rows=state.rows.slice(0,MAX_ROWS).map(r=>({
-      id:Number(r.id)||++seq,
-      name:r.name||'',
-      cat:cats.includes(r.cat)?r.cat:'기타',
-      price:r.price||'',
-      qty:Number.isFinite(Number(r.qty))?Number(r.qty):1,
-      type:types.some(t=>t[0]===r.type)?r.type:'weekly'
-    }));
-    seq=Math.max(seq,...rows.map(r=>Number(r.id)||0));
-    $('saveState').textContent='이전 입력 복원됨';
-    return true;
-  }catch(e){
-    return false;
-  }
+  // 새로 열 때는 항상 빈 상태로 시작합니다.
+  return false;
 }
 
 function parseMoney(raw){
@@ -382,17 +346,27 @@ function budgetHint(){
 
 function mealsPerWeek(){
   const pattern=$('mealPattern').value;
+  if(!pattern)return 0;
   if(pattern==='custom'){
-    return Math.max(1,Math.min(21,Number($('customMeals').value)||1));
+    const n=Number($('customMeals').value);
+    if(!Number.isFinite(n) || n<=0)return 0;
+    return Math.max(1,Math.min(21,n));
   }
-  return Math.max(1,Math.min(21,Number(pattern)||14));
+  return Math.max(1,Math.min(21,Number(pattern)||0));
 }
 
 function updateMealPattern(){
-  const custom=$('mealPattern').value==='custom';
+  const pattern=$('mealPattern').value;
+  const custom=pattern==='custom';
   $('customMealsWrap').classList.toggle('hidden',!custom);
 
   const weekly=mealsPerWeek();
+  if(!weekly){
+    $('mealPatternHint').textContent=custom?'직접 횟수를 입력해주세요.':'식사 패턴을 선택해주세요.';
+    $('customMealsHint').textContent='';
+    return;
+  }
+
   const monthly=Math.round(weekly*52/12);
   const text=`주 ${weekly}회 · 월 약 ${monthly}회`;
 
@@ -476,7 +450,7 @@ function recalc(){
   budgetHint();
   syncFromDom();
   const b=budget();
-  const family=Number($('family').value)||1;
+  const family=Number($('family').value)||0;
   updateMealPattern();
   const meals=mealsPerWeek();
 
@@ -552,8 +526,8 @@ function recalc(){
   $('typeOptional').textContent=money(totals.optional);
   $('typeHousehold').textContent=money(totals.household);
 
-  $('perDay').textContent=money(repeatWeekly/family/7);
-  $('perMeal').textContent=money(repeatWeekly/family/meals);
+  $('perDay').textContent=family>0?money(repeatWeekly/family/7):'가족 수 입력';
+  $('perMeal').textContent=(family>0&&meals>0)?money(repeatWeekly/family/meals):'식사 패턴 입력';
 
   const foodItems=items.filter(x=>x.type!=='household');
   const top=[...items].sort((a,b)=>b.total-a.total)[0];
@@ -666,7 +640,11 @@ function recalc(){
   $('diagnosis').innerHTML=`
     <p>${conclusion}</p>
     <p style="margin-top:8px">이번 장바구니에서 가장 큰 식품 카테고리는 <strong>${topCat?topCat[0]:'-'}</strong>이며 식비의 약 <strong>${topCat?(topCat[1]/Math.max(1,foodTotal)*100).toFixed(0):0}%</strong>입니다.</p>
-    <p style="margin-top:8px">4인 가족의 매주 반복되는 식재료만 기준으로 보면 1인 하루 약 <strong>${money(repeatWeekly/family/7)}</strong>, 집에서 먹는 식사가 주 ${meals}회인 패턴 기준 1인 한 끼 약 <strong>${money(repeatWeekly/family/meals)}</strong>입니다.</p>
+    <p style="margin-top:8px">${
+      family>0 && meals>0
+        ? `${family}인 가족의 매주 반복되는 식재료만 기준으로 보면 1인 하루 약 <strong>${money(repeatWeekly/family/7)}</strong>, 집에서 먹는 식사가 주 ${meals}회인 패턴 기준 1인 한 끼 약 <strong>${money(repeatWeekly/family/meals)}</strong>입니다.`
+        : `가족 수와 집에서 먹는 식사 패턴을 선택하면 1인 하루·한 끼 식재료비까지 계산됩니다.`
+    }</p>
   `;
   saveState();
 }
@@ -708,8 +686,12 @@ $('riceBtn').addEventListener('click',()=>{
 });
 $('clearBtn').addEventListener('click',()=>{
   rows=[];seq=0;
+  $('family').value='';
+  $('budget').value='';
+  $('mealPattern').value='';
+  $('customMeals').value='';
+  updateMealPattern();
   try{localStorage.removeItem(STORAGE_KEY)}catch(e){}
-  $('saveState').textContent='입력내용 자동 저장';
   render();
 });
 
@@ -724,13 +706,16 @@ document.querySelectorAll('.quick').forEach(btn=>{
   });
 });
 
+// 공개용 버전은 항상 완전히 빈 상태로 시작
+try{localStorage.removeItem(STORAGE_KEY)}catch(e){}
+rows=[];
+seq=0;
+$('family').value='';
+$('budget').value='';
+$('mealPattern').value='';
+$('customMeals').value='';
 updateMealPattern();
-if(restoreState()){
-  updateMealPattern();
-  render();
-}else{
-  loadSample();
-}
+render();
 })();
 </script>
 </body>
