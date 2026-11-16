@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>네이버 블로그 포스팅 전 올인원 점검기 (홈판형 · SEO형)</title>
+<style>
+:root{
+  --bg:#EEF1F6; --paper:#FFFFFF; --field:#F3F5F9; --line:#DCE2EC;
+  --ink:#101B2E; --soft:#4A5670; --mute:#8791A5;
+  --acc:#0B8F5A; --acc-bg:#E4F5EC; --home:#C2410C; --home-bg:#FDEBDD;
+  --ok:#0B8F5A; --warn:#A15C0E; --warn-bg:#FBF0DC; --bad:#B4302B; --bad-bg:#FBE6E4;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0F141C; --paper:#171E29; --field:#1F2835; --line:#2C3747;
+    --ink:#E9EEF6; --soft:#A9B4C6; --mute:#75819A;
+    --acc:#3DCB8C; --acc-bg:#143526; --home:#FB923C; --home-bg:#3A2415;
+    --ok:#3DCB8C; --warn:#E5A84B; --warn-bg:#3A2E15; --bad:#F0736C; --bad-bg:#3D1C1A;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;padding:16px 14px 60px;background:var(--bg);color:var(--ink);
+  font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  font-size:14px;line-height:1.6;-webkit-text-size-adjust:100%}
+body.home{--acc:var(--home);--acc-bg:var(--home-bg)}
+.wrap{max-width:1180px;margin:0 auto}
+header{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:flex-end;justify-content:space-between;margin-bottom:14px}
+h1{font-size:20px;margin:0;letter-spacing:-.4px}
+.lede{margin:2px 0 0;color:var(--soft);font-size:13px}
+.grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:14px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+.card h2{font-size:15px;margin:0 0 10px;letter-spacing:-.3px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.card h2 small{font-weight:500;color:var(--mute);font-size:12px}
+label{display:block;font-size:12.5px;font-weight:700;margin:12px 0 5px}
+label small{font-weight:500;color:var(--mute)}
+input[type=text],input[type=number],textarea,select{width:100%;padding:10px 11px;font:inherit;font-size:15px;
+  border:1px solid var(--line);border-radius:9px;background:var(--field);color:var(--ink)}
+textarea{min-height:260px;resize:vertical;line-height:1.7}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--acc);outline-offset:1px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row>*{flex:1;min-width:120px}
+.seg{display:flex;gap:6px}
+.seg button{flex:1;padding:11px 6px;font:inherit;font-weight:800;font-size:14px;border:1px solid var(--line);
+  border-radius:10px;background:var(--field);color:var(--soft);cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--acc);border-color:var(--acc);color:#fff}
+.seg button span{display:block;font-size:11px;font-weight:500;opacity:.85}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:var(--field);color:var(--soft);
+  font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap}
+.chip[aria-pressed=true]{background:var(--acc-bg);border-color:var(--acc);color:var(--acc)}
+.chip.off{opacity:.45;text-decoration:line-through}
+.btn{padding:7px 11px;border:1px solid var(--line);border-radius:8px;background:var(--field);color:var(--ink);
+  font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+.btn:active{transform:translateY(1px)}
+.tabs{display:flex;gap:4px;overflow-x:auto;margin-bottom:12px;padding-bottom:2px;position:sticky;top:0;z-index:5;background:var(--bg);padding-top:4px}
+.tabs button{flex:0 0 auto;padding:9px 13px;border:1px solid var(--line);border-radius:10px;background:var(--paper);
+  color:var(--soft);font:inherit;font-weight:700;font-size:13px;cursor:pointer}
+.tabs button[aria-selected=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.pane{display:none}.pane.on{display:block}
+.score{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.ring{--p:0;width:104px;height:104px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;
+  background:conic-gradient(var(--acc) calc(var(--p)*1%),var(--field) 0)}
+.ring div{width:82px;height:82px;border-radius:50%;background:var(--paper);display:grid;place-items:center;text-align:center;line-height:1.15}
+.ring b{font-size:27px;font-variant-numeric:tabular-nums}.ring span{font-size:11px;color:var(--mute);display:block}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:8px;flex:1;min-width:220px}
+.stat{background:var(--field);border-radius:10px;padding:8px 10px}
+.stat b{display:block;font-size:17px;font-variant-numeric:tabular-nums}.stat span{font-size:11.5px;color:var(--soft)}
+.chk{list-style:none;margin:12px 0 0;padding:0}
+.chk li{display:flex;gap:9px;padding:8px 0;border-top:1px solid var(--line);align-items:flex-start}
+.dot{flex:0 0 auto;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:900;color:#fff;margin-top:1px}
+.ok .dot{background:var(--ok)}.warn .dot{background:var(--warn)}.bad .dot{background:var(--bad)}
+.chk b{display:block;font-size:13.5px}.chk p{margin:0;font-size:12.5px;color:var(--soft)}
+.list{list-style:none;margin:0;padding:0}
+.list li{display:flex;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.list li:first-child{border-top:0}
+.list .t{flex:1;min-width:0;word-break:keep-all}
+.list .n{font-size:11.5px;color:var(--mute);font-variant-numeric:tabular-nums;white-space:nowrap}
+.ol{margin:0;padding-left:20px}.ol li{margin:7px 0}.ol small{display:block;color:var(--soft);font-size:12.5px}
+.note{font-size:12.5px;color:var(--soft);background:var(--field);border-radius:9px;padding:9px 11px;margin:10px 0 0}
+.prev{white-space:pre-wrap;word-break:break-word;background:var(--field);border-radius:10px;padding:12px;max-height:340px;overflow:auto;font-size:13.5px;line-height:1.8}
+mark.k{background:var(--acc-bg);color:var(--acc);font-weight:700;border-radius:3px;padding:0 2px}
+mark.r{background:var(--bad-bg);color:var(--bad);font-weight:700;border-radius:3px;padding:0 2px}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl td{padding:5px 4px;border-top:1px solid var(--line)}.tbl td:last-child{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.todo label{display:flex;gap:9px;align-items:flex-start;font-weight:500;font-size:13.5px;margin:0;padding:8px 0;border-top:1px solid var(--line);cursor:pointer}
+.todo input{margin-top:4px;width:17px;height:17px;accent-color:var(--acc);flex:0 0 auto}
+.todo input:checked+span{color:var(--mute);text-decoration:line-through}
+.bar{height:8px;background:var(--field);border-radius:99px;overflow:hidden;margin:6px 0 4px}.bar i{display:block;height:100%;background:var(--acc);width:0}
+.links{display:flex;flex-wrap:wrap;gap:6px}
+.links a{padding:7px 11px;border:1px solid var(--line);border-radius:8px;background:var(--field);color:var(--ink);font-size:12.5px;font-weight:700;text-decoration:none}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:9px 16px;border-radius:99px;font-size:13px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20}
+.toast.on{opacity:1}
+.h2r{margin-left:auto;display:flex;gap:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div>
+    <h1>네이버 블로그 포스팅 전 올인원 점검기</h1>
+    <p class="lede">글을 붙여넣으면 제목·본문·태그·체크리스트까지 한 화면에서 끝냅니다. 입력 내용은 이 브라우저에만 저장됩니다.</p>
+  </div>
+  <div class="row" style="flex:0 0 auto">
+    <button class="btn" id="btnReport">📋 리포트 복사</button>
+    <button class="btn" id="btnReset">초기화</button>
+  </div>
+</header>
+
+<div class="grid">
+<!-- ============ 입력 ============ -->
+<div>
+  <div class="card">
+    <h2>① 유형 <small>목적에 따라 기준이 달라집니다</small></h2>
+    <div class="seg" id="modeSeg">
+      <button data-mode="home">홈판형<span>메인·홈피드 노출 / 클릭·체류</span></button>
+      <button data-mode="seo">SEO형<span>검색 상위노출 / 키워드·정보</span></button>
+    </div>
+    <label>② 주제</label>
+    <div class="chips" id="topicChips"></div>
+  </div>
+
+  <div class="card">
+    <h2>③ 글 정보</h2>
+    <div class="row">
+      <div><label>메인 키워드</label><input type="text" id="kw" placeholder="예: 강남역 맛집"></div>
+      <div><label>서브 키워드 <small>쉼표로 구분</small></label><input type="text" id="subs" placeholder="예: 강남역 데이트, 강남 파스타"></div>
+    </div>
+    <label>제목 <small id="titleLen"></small></label>
+    <input type="text" id="title" placeholder="발행할 제목">
+    <label>본문 붙여넣기 <small id="bodyLen"></small></label>
+    <textarea id="body" placeholder="작성한 글을 그대로 붙여넣으세요. 사진 자리는 [사진] 으로 표시하면 자동으로 셉니다."></textarea>
+    <div class="row">
+      <div><label>사진 수 <small>비우면 [사진] 표시 자동 집계</small></label><input type="number" id="imgs" min="0" inputmode="numeric" placeholder="자동"></div>
+      <div><label>동영상 수</label><input type="number" id="vids" min="0" inputmode="numeric" placeholder="0"></div>
+      <div><label>협찬·광고 여부</label>
+        <select id="ad"><option value="none">해당 없음 (내돈내산)</option><option value="free">제품·서비스 무상 제공</option><option value="paid">원고료 지급</option><option value="aff">제휴 링크(수수료)</option><option value="exp">체험단</option></select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>내 금칙어 <small>추가로 걸러낼 단어 (쉼표 구분)</small></h2>
+    <input type="text" id="myban" placeholder="예: 경쟁사명, 쓰지 않기로 한 표현">
+  </div>
+</div>
+
+<!-- ============ 결과 ============ -->
+<div>
+  <div class="tabs" id="tabs" role="tablist">
+    <button data-tab="an" aria-selected="true">분석·점수</button>
+    <button data-tab="ti">제목</button>
+    <button data-tab="ol">글 구조</button>
+    <button data-tab="tg">태그</button>
+    <button data-tab="cl">발행 체크</button>
+    <button data-tab="tl">도구</button>
+  </div>
+
+  <div class="pane on" id="p-an">
+    <div class="card">
+      <h2><span id="modeBadge"></span> 점수</h2>
+      <div class="score">
+        <div class="ring" id="ring"><div><span><b id="scoreN">–</b><span id="scoreT">대기</span></span></div></div>
+        <div class="stats" id="stats"></div>
+      </div>
+      <ul class="chk" id="checks"></ul>
+      <p class="note">네이버의 노출 로직은 공개되어 있지 않습니다. 이 점수는 널리 쓰이는 작성 관행을 기준으로 한 <b>자가 점검용</b>이며 노출을 보장하지 않습니다.</p>
+    </div>
+    <div class="card">
+      <h2>본문 하이라이트 <small><mark class="k">키워드</mark> <mark class="r">위험 표현</mark></small></h2>
+      <div class="prev" id="prev">본문을 붙여넣으면 표시됩니다.</div>
+    </div>
+    <div class="card">
+      <h2>자주 쓴 단어 TOP 12 <small>대략적인 집계</small></h2>
+      <table class="tbl" id="freq"></table>
+    </div>
+  </div>
+
+  <div class="pane" id="p-ti">
+    <div class="card">
+      <h2>제목 후보 <small id="tiHint"></small></h2>
+      <ul class="list" id="titles"></ul>
+    </div>
+    <div class="card">
+      <h2>썸네일(대표 이미지) 문구</h2>
+      <ul class="list" id="thumbs"></ul>
+    </div>
+  </div>
+
+  <div class="pane" id="p-ol">
+    <div class="card">
+      <h2>글 뼈대 <small id="olHint"></small><span class="h2r"><button class="btn" id="cpOl">뼈대 복사</button></span></h2>
+      <ol class="ol" id="outline"></ol>
+    </div>
+    <div class="card">
+      <h2>도입부 · 마무리 문장</h2>
+      <ul class="list" id="phrases"></ul>
+    </div>
+  </div>
+
+  <div class="pane" id="p-tg">
+    <div class="card">
+      <h2>태그 <small id="tgHint"></small><span class="h2r"><button class="btn pri" id="cpTg">태그 복사</button></span></h2>
+      <div class="chips" id="tags"></div>
+      <p class="note">칩을 누르면 제외됩니다. 네이버 블로그 태그는 글당 최대 30개입니다.</p>
+    </div>
+    <div class="card">
+      <h2>롱테일 키워드 조합 <small>눌러서 네이버 검색으로 확인</small></h2>
+      <div class="links" id="longtail"></div>
+    </div>
+    <div class="card">
+      <h2>키워드 조사 바로가기</h2>
+      <div class="links" id="research"></div>
+    </div>
+  </div>
+
+  <div class="pane" id="p-cl">
+    <div class="card">
+      <h2>발행 전 체크리스트 <small id="clCount"></small><span class="h2r"><button class="btn" id="clClear">체크 해제</button></span></h2>
+      <div class="bar"><i id="clBar"></i></div>
+      <div class="todo" id="todo"></div>
+    </div>
+    <div class="card">
+      <h2>추천 발행 시간 <small>경험칙</small></h2>
+      <div id="timeBox"></div>
+    </div>
+  </div>
+
+  <div class="pane" id="p-tl">
+    <div class="card">
+      <h2>광고·협찬 표시 문구 <small>글 첫 부분에 넣으세요</small></h2>
+      <ul class="list" id="disc"></ul>
+      <p class="note">경제적 이해관계가 있으면 표시가 의무입니다(공정위 추천·보증 심사지침). 본문 맨 끝이나 더보기 뒤에 숨기면 인정되지 않을 수 있습니다.</p>
+    </div>
+    <div class="card">
+      <h2>모바일 가독성 정리 <span class="h2r"><button class="btn" id="mkMobile">변환</button><button class="btn pri" id="cpMobile">복사</button></span></h2>
+      <div class="row" style="margin-bottom:8px">
+        <select id="mobN"><option value="2">2문장마다 한 줄 띄움</option><option value="3">3문장마다 한 줄 띄움</option><option value="1">1문장마다 한 줄 띄움</option></select>
+      </div>
+      <textarea id="mobile" style="min-height:180px" placeholder="‘변환’을 누르면 본문을 문장 단위로 줄바꿈해 모바일에서 읽기 쉽게 정리합니다."></textarea>
+    </div>
+    <div class="card">
+      <h2>발행 패키지 한 번에 복사</h2>
+      <p style="margin:0 0 10px;color:var(--soft);font-size:13px">제목 + 광고 표시 문구 + 본문 + 태그를 순서대로 묶어 복사합니다.</p>
+      <button class="btn pri" id="cpPack">패키지 복사</button>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= 데이터 ================= */
+const Y=new Date().getFullYear(), M=new Date().getMonth()+1;
+const T={
+food:{n:'🍽 맛집·카페',sx:['추천','후기','메뉴','주차','웨이팅','가격'],
+ tags:['맛집추천','맛집탐방','내돈내산','데이트코스','카페투어','주말나들이'],
+ need:[['주소·위치',/주소|위치|오시는|찾아가|역\s?\d번|도보/],['영업시간·휴무',/영업\s?시간|오픈|마감|휴무|브레이크/],['메뉴·가격',/\d[\d,]*\s?원|가격|메뉴판/],['주차',/주차/],['웨이팅·예약',/웨이팅|예약|대기/]],
+ st:['{k} 메뉴·가격·주차 총정리 (웨이팅 팁 포함)','{k} 추천 | 직접 가본 솔직 후기와 주문 조합','{k} 내돈내산 후기, 영업시간·예약 방법 정리'],
+ ht:['{k}, 줄 서서 먹을 만한지 직접 가봤습니다','여기 왜 이제 알았을까… {k} 다녀온 날','{k} 가기 전에 이 메뉴는 꼭 시키세요'],
+ so:[['{k} 한눈에 보기','위치·영업시간·주차·예약을 표나 목록으로 먼저'],['찾아가는 법','가까운 역·출구, 도보 시간, 주차 요금'],['매장 분위기·좌석','외관·내부 사진, 좌석 수, 단체·아기의자 여부'],['메뉴판과 가격','메뉴판 사진 + 주문한 메뉴와 금액'],['먹어본 메뉴 후기','메뉴별 맛·양·추천 조합을 구체적으로'],['웨이팅·방문 팁','피크 시간, 예약 방법, 아쉬운 점'],['총평','누구에게 추천하는지 + {k} 재방문 의사']],
+ ho:[['한 컷으로 시작','가장 먹음직스러운 사진 + 한 줄 감탄'],['가게 된 이유','누구와, 어떤 상황에서'],['먹는 순서대로','사진 위주, 문장은 짧게'],['의외였던 점','기대와 달랐던 것 하나'],['한 줄 결론','다시 갈지 + 독자에게 질문']],
+ chk:['메뉴판·가격 사진을 넣었다','주소·영업시간·주차 정보를 넣었다','지도(장소)를 첨부했다'],
+ ts:'평일 10~11시 / 16~17시 (점심·저녁 검색 직전)',th:'목·금 17~20시, 토·일 9~11시',
+ tb:['줄 서는 이유','여긴 꼭 가세요','메뉴 추천 조합']},
+travel:{n:'✈️ 여행·숙소',sx:['코스','일정','가볼만한곳','숙소','경비','후기'],
+ tags:['여행코스','국내여행','해외여행','가볼만한곳','여행일정','숙소추천'],
+ need:[['일정·코스',/일정|코스|\d박\s?\d일|당일치기/],['비용',/\d[\d,]*\s?(원|만원|엔|달러|바트)|경비|비용|요금/],['이동·교통',/교통|버스|지하철|렌트|비행|기차|KTX|택시|도보/],['운영시간·예약',/운영\s?시간|입장|예약|체크인/],['시기·날씨',/날씨|계절|성수기|\d+월/]],
+ st:['{k} 코스 총정리 | 일정·경비·교통 한 번에','{k} 가볼만한곳 BEST 5와 동선 짜는 법','{k} 숙소 추천, 위치별 장단점 비교 ('+Y+')'],
+ ht:['{k}, 다녀와서야 알게 된 것들','{k} 이 일정으로 가면 후회 없어요','사진 한 장 보고 떠난 {k}'],
+ so:[['{k} 요약','기간·총경비·추천 시기를 맨 위에'],['일정표','날짜별 동선을 목록으로'],['교통·이동','공항/역에서 이동, 패스·렌트 여부'],['장소별 후기','운영시간·입장료·소요시간 포함'],['숙소·식사','위치, 가격, 예약 경로'],['경비 정리','항목별 금액 표'],['준비물·주의사항','{k} 가기 전 알아둘 점']],
+ ho:[['가장 좋았던 장면','대표 사진 한 장으로 시작'],['떠난 계기','짧게 한두 문장'],['하루 흐름대로','시간순 사진 + 감상'],['예상 밖의 순간','실수·반전 에피소드'],['다음에 간다면','한 줄 팁 + 질문']],
+ chk:['일정·경비를 숫자로 적었다','지도 또는 동선 이미지를 넣었다','운영시간·휴무일을 확인했다'],
+ ts:'화~목 20~22시 (계획 검색 시간대)',th:'일 20~22시, 연휴·방학 2~3주 전',
+ tb:['이 코스 그대로','경비 얼마 들었나','여긴 꼭 가세요']},
+beauty:{n:'💄 뷰티·패션',sx:['추천','후기','발색','사용법','비교','코디'],
+ tags:['뷰티템','내돈내산','데일리룩','화장품추천','피부관리','코디추천'],
+ need:[['제품명·브랜드',/브랜드|제품명|라인|호수|컬러/],['가격·용량',/\d[\d,]*\s?원|ml|g\b|용량|가격/],['피부타입·체형',/건성|지성|복합성|민감|수부지|웜톤|쿨톤|체형|사이즈/],['사용기간',/\d+\s?(일|주|개월|달)|사용\s?기간|써보/],['아쉬운 점',/아쉬|단점|별로|주의/]],
+ st:['{k} 후기 | 2주 써본 장단점과 추천 피부타입','{k} 비교, 가격·성분·발림성 정리','{k} 추천 5가지 ('+Y+'년 기준, 내돈내산)'],
+ ht:['{k} 2주 쓰고 달라진 것','솔직히 {k} 기대 안 했는데요','{k} 이렇게 쓰니까 다르더라고요'],
+ so:[['{k} 한 줄 결론','추천 대상을 먼저'],['제품 정보','가격·용량·구매처·성분'],['제형·발색·착용샷','전후 비교 사진'],['사용 방법','순서와 양'],['장점','구체적 상황과 함께'],['아쉬운 점','반드시 1개 이상'],['이런 분께 추천','피부타입·체형별']],
+ ho:[['전후 사진','차이가 보이는 한 컷'],['사게 된 이유','고민 공감'],['써보는 과정','사진 위주'],['솔직한 단점','신뢰를 만드는 부분'],['재구매 의사','질문으로 마무리']],
+ chk:['전후·발색 사진을 넣었다','내 피부타입/체형을 밝혔다','단점을 최소 1개 적었다'],
+ ts:'평일 21~23시',th:'평일 12~13시, 21~23시',
+ tb:['2주 사용 전후','내돈내산 솔직후기','이건 재구매']},
+it:{n:'💻 IT·테크',sx:['사용법','설정','후기','비교','추천','오류'],
+ tags:['IT정보','테크리뷰','사용법','꿀팁','앱추천','전자기기'],
+ need:[['버전·모델',/버전|모델|v\d|iOS|안드로이드|윈도우|맥|\d{4}년형/i],['단계 설명',/1\.|①|첫\s?번째|먼저|다음으로|단계/],['스펙·수치',/\d+\s?(GB|TB|mAh|Hz|인치|W|ms|fps|원)/i],['주의·오류 대처',/주의|오류|안\s?될|해결|문제/]],
+ st:['{k} 방법, 3분 만에 끝내는 순서 정리','{k} 비교 | 스펙·가격·실사용 차이','{k} 오류 해결법 5가지 ('+Y+' 최신)'],
+ ht:['{k}, 이 설정 하나로 달라집니다','아직도 {k} 이렇게 쓰세요?','{k} 한 달 써보고 느낀 점'],
+ so:[['결론부터','{k} 핵심 답을 3줄로'],['준비물·환경','기기·버전 명시'],['단계별 방법','스크린샷 + 번호 목록'],['자주 막히는 부분','오류와 해결'],['비교·대안','다른 방법과 차이'],['FAQ','질문 3~5개'],['정리','{k} 체크 포인트']],
+ ho:[['문제 상황 공감','누구나 겪는 불편'],['해결 한 장','결과 화면 먼저'],['따라 하기','짧은 단계'],['써보니','체감 변화'],['추가 팁 하나','저장 유도']],
+ chk:['스크린샷에 개인정보가 없다','버전·날짜를 적었다','단계에 번호를 붙였다'],
+ ts:'평일 9~11시, 14~16시',th:'평일 7~9시, 18~20시',
+ tb:['3분이면 끝','이 설정 켜세요','모르면 손해']},
+money:{n:'💰 재테크·경제',sx:['계산','조건','신청방법','금리','비교','정리'],
+ tags:['재테크','경제공부','절약','금융정보','가계부','짠테크'],
+ need:[['기준일',/\d{4}년|\d+월\s?\d*일?\s?기준|기준일|최신/],['수치·금액',/\d[\d,.]*\s?(원|만원|억|%|퍼센트)/],['출처',/출처|자료|공시|한국은행|금융감독원|국세청|통계청|보도자료|홈페이지/],['조건·대상',/조건|대상|자격|한도|기간/],['유의사항',/유의|주의|투자\s?권유|참고용|책임|달라질/]],
+ st:['{k} 조건·한도·신청방법 총정리 ('+Y+'년 '+M+'월)','{k} 계산 방법, 예시로 쉽게 정리','{k} 비교 | 금리·수수료·우대조건 한눈에'],
+ ht:['{k}, 모르면 매달 새는 돈','월급은 그대로인데… {k} 해보니','{k} 계산해보고 깜짝 놀랐습니다'],
+ so:[['핵심 요약','{k} 결론을 숫자로 3줄'],['대상·조건','누가 해당되는지'],['금액·금리 계산','예시 표와 계산 과정'],['신청·이용 방법','단계별'],['비교','다른 선택지와 차이'],['유의사항','변동 가능성·출처·기준일'],['FAQ·정리','자주 묻는 질문']],
+ ho:[['내 숫자로 시작','실제 금액이 주는 충격'],['왜 알아봤나','상황 공감'],['해본 과정','계산·캡처'],['결과','전후 비교'],['누구나 할 수 있는 한 가지','질문으로 마무리']],
+ chk:['수치의 기준일과 출처를 적었다','투자 권유가 아님을 밝혔다(해당 시)','계산 예시를 넣었다','확정 수익·원금 보장 표현이 없다'],
+ ts:'평일 7~9시, 12~13시',th:'일 21~23시, 월급일·연말정산 시즌 직전',
+ tb:['매달 얼마 차이','계산해봤습니다','모르면 손해']},
+health:{n:'🏃 건강·운동',sx:['방법','효과','루틴','식단','주의사항','후기'],
+ tags:['건강정보','운동루틴','홈트','식단관리','다이어트','건강관리'],
+ need:[['출처·근거',/출처|연구|논문|학회|질병관리청|식약처|전문의|의사/],['방법·횟수',/\d+\s?(회|세트|분|초|kcal|g|ml)|방법|루틴/],['주의사항',/주의|부작용|금기|무리|통증/],['개인차·상담 안내',/개인차|전문의|상담|진료|의료진/]],
+ st:['{k} 방법과 주의사항, 근거와 함께 정리','{k} 루틴 | 초보자도 따라 하는 4주 계획','{k} 효과와 부작용, 꼭 알아야 할 5가지'],
+ ht:['{k} 한 달 해본 솔직한 변화','{k}, 이것 하나 바꿨더니','다들 {k} 이렇게 하다 그만둡니다'],
+ so:[['핵심 요약','{k} 결론 먼저'],['원리·근거','출처 표기'],['방법','횟수·시간을 숫자로'],['흔한 실수','잘못된 자세·습관'],['주의할 사람','질환·통증이 있을 때'],['실천 팁','지속하는 방법'],['정리','개인차 안내']],
+ ho:[['변화 한 컷','기록·그래프·사진'],['시작한 이유','공감 포인트'],['실제로 한 것','하루 루틴'],['힘들었던 순간','솔직하게'],['지금 상태','질문으로 마무리']],
+ chk:['치료·완치 등 단정 표현이 없다','근거 출처를 적었다','개인차·전문의 상담 안내를 넣었다'],
+ ts:'평일 6~8시, 21~23시',th:'월 6~9시, 일 20~22시',
+ tb:['한 달 변화','이것만 바꿨어요','초보 루틴']},
+kids:{n:'👶 육아·교육',sx:['추천','후기','방법','시기','준비물','비용'],
+ tags:['육아일기','육아정보','육아템','아이와가볼만한곳','엄마표','초등교육'],
+ need:[['아이 나이·개월수',/\d+\s?(개월|살|세|학년)|신생아|돌\s?아기/],['비용·가격',/\d[\d,]*\s?원|비용|가격|무료/],['사용·이용 기간',/\d+\s?(일|주|개월|달)|기간/],['안전·주의',/안전|주의|위험|인증|KC/]],
+ st:['{k} 추천 | 개월수별 선택 기준 정리','{k} 후기, 3개월 써본 장단점','{k} 준비물·비용·시기 총정리'],
+ ht:['{k}, 미리 알았으면 덜 고생했을 것들','우리 아이 {k} 이렇게 해결했어요','{k} 사고 후회한 것 vs 잘 산 것'],
+ so:[['한 줄 결론','{k} 추천 여부'],['우리 아이 정보','개월수·성향'],['선택 기준','비교 포인트'],['사용 후기','사진과 상황'],['비용','구매처·가격'],['주의사항','안전·관리'],['정리','연령별 추천']],
+ ho:[['공감 한 문장','그날의 상황'],['시도한 것','과정 사진'],['아이 반응','생생하게'],['배운 점','한 줄 팁'],['다른 집은?','질문으로 마무리']],
+ chk:['아이 얼굴·이름·학교 등 개인정보 노출을 확인했다','개월수/연령을 적었다','안전 관련 주의점을 넣었다'],
+ ts:'평일 10~12시, 21~23시',th:'평일 13~15시, 22~24시',
+ tb:['미리 알았다면','개월수별 정리','후회템 vs 잘산템']},
+recipe:{n:'🍳 요리·레시피',sx:['레시피','만드는법','황금비율','양념','보관','칼로리'],
+ tags:['집밥','간단요리','레시피','자취요리','밑반찬','오늘뭐먹지'],
+ need:[['재료·분량',/\d+\s?(g|ml|큰술|작은술|컵|개|T|t|스푼|인분)/],['조리 시간·불 세기',/\d+\s?(분|초)|중불|약불|강불|센불/],['순서',/1\.|①|먼저|다음|마지막/],['보관·팁',/보관|냉장|냉동|팁|대체/]],
+ st:['{k} 만드는 법, 황금비율 양념 레시피','{k} 레시피 | 재료·순서·보관법까지','{k} 10분 완성, 실패 없는 순서'],
+ ht:['{k}, 이 한 가지 넣으면 맛이 달라져요','냉장고 재료로 만든 {k}','{k} 식당 맛 나는 비결'],
+ so:[['완성 사진 + 요약','인분·시간·난이도'],['재료','계량 단위 통일, 대체 재료'],['손질·준비','사진과 함께'],['조리 순서','번호 + 불 세기·시간'],['맛 포인트','실패하기 쉬운 지점'],['보관·활용','남았을 때'],['정리','{k} 한 줄 레시피']],
+ ho:[['완성 컷','가장 맛있어 보이는 사진'],['오늘의 상황','왜 이 메뉴'],['과정','짧게, 사진 위주'],['맛 평가','가족 반응'],['한 줄 레시피','저장 유도']],
+ chk:['재료 분량을 숫자로 적었다','과정 사진을 순서대로 넣었다','완성 사진이 대표 이미지다'],
+ ts:'평일 10~11시, 16~17시',th:'평일 16~18시, 일 10~12시',
+ tb:['황금비율','10분 완성','실패 없는 레시피']},
+home:{n:'🏠 인테리어·리빙',sx:['추천','후기','비용','셀프','전후','정리'],
+ tags:['집꾸미기','인테리어','셀프인테리어','살림템','정리정돈','온라인집들이'],
+ need:[['평수·치수',/\d+\s?(평|cm|mm|m\b|㎡)/],['비용',/\d[\d,]*\s?(원|만원)|비용|견적/],['전후 비교',/전후|비포|애프터|before|after|바꾸기 전/i],['구매처·제품명',/구매|브랜드|제품|링크|매장/]],
+ st:['{k} 비용·기간·과정 총정리 (전후 사진)','{k} 추천 | 평수별 고르는 기준','{k} 셀프로 하는 법과 주의사항'],
+ ht:['{k} 하나 바꿨을 뿐인데','{k} 전후, 같은 집 맞나요','{k} 하고 나서 후회한 것들'],
+ so:[['전후 사진 + 요약','평수·비용·기간'],['바꾸기 전 고민','문제점'],['선택 기준','제품·자재 비교'],['과정','단계별 사진'],['비용 정리','항목별 표'],['아쉬운 점','다시 한다면'],['정리','{k} 체크리스트']],
+ ho:[['전후 한 컷','변화가 한눈에'],['바꾸게 된 이유','불편했던 점'],['과정 스냅','짧게'],['살아보니','실사용 감상'],['제품 정보','질문으로 마무리']],
+ chk:['전후 사진을 같은 구도로 넣었다','치수·평수를 적었다','비용을 항목별로 적었다'],
+ ts:'평일 21~23시, 토 10~12시',th:'토·일 9~12시, 평일 22~24시',
+ tb:['전후 비교','이것 하나로','비용 공개']},
+review:{n:'📦 제품 리뷰',sx:['후기','추천','단점','비교','가격','사용법'],
+ tags:['내돈내산','솔직후기','제품리뷰','추천템','언박싱','사용후기'],
+ need:[['제품명·모델',/모델|제품명|브랜드/],['가격·구매처',/\d[\d,]*\s?원|가격|구매처|쿠팡|스마트스토어|매장/],['사용기간',/\d+\s?(일|주|개월|달|년)|사용\s?기간/],['장점',/장점|좋았|만족/],['단점',/단점|아쉬|불편|별로/]],
+ st:['{k} 후기 | 한 달 써본 장단점 정리','{k} 비교, 어떤 걸 사야 할까','{k} 단점 위주 솔직 후기와 구매 팁'],
+ ht:['{k} 한 달 써보고 말합니다','{k}, 사기 전에 이것만 보세요','결국 {k} 샀습니다. 그리고…'],
+ so:[['한 줄 결론','{k} 추천 대상'],['구매 정보','가격·구매처·구성'],['스펙·외관','사진'],['실사용 장점','상황 중심'],['단점','반드시 포함'],['비교','대안 제품'],['구매 팁·정리','이런 분께 추천']],
+ ho:[['첫인상 한 컷','언박싱 또는 사용 장면'],['산 이유','고민 과정'],['써본 장면들','사진 위주'],['단점 고백','솔직하게'],['결론','질문으로 마무리']],
+ chk:['직접 찍은 사진을 썼다','단점을 최소 1개 적었다','가격·구매처를 적었다'],
+ ts:'평일 20~23시',th:'평일 12~13시, 20~22시',
+ tb:['한 달 사용 후기','단점부터 말할게요','살까 말까']},
+tips:{n:'📌 정보·생활꿀팁',sx:['방법','신청','조건','기간','총정리','서류'],
+ tags:['생활정보','꿀팁','정보공유','알아두면좋은','생활꿀팁','정부지원'],
+ need:[['기준일',/\d{4}년|\d+월|기준|최신/],['대상·조건',/대상|조건|자격/],['방법·절차',/방법|신청|절차|1\.|①|단계/],['기간·기한',/기간|마감|까지|언제/],['출처·문의처',/출처|홈페이지|고객센터|문의|정부24|보도자료/]],
+ st:['{k} 신청방법·대상·기간 총정리 ('+Y+')','{k} 방법, 5분 만에 끝내는 순서','{k} 조건과 필요 서류 한눈에 정리'],
+ ht:['{k}, 아직도 모르는 분 많더라고요','{k} 안 하면 손해인 이유','{k} 직접 해봤습니다 (5분 컷)'],
+ so:[['3줄 요약','{k} 핵심'],['대상·조건','해당 여부 확인'],['방법','단계별 스크린샷'],['기간·준비물','표로'],['자주 하는 실수','반려·오류 사례'],['FAQ','질문 3~5개'],['출처·문의처','공식 링크']],
+ ho:[['손해 본 경험','공감 유도'],['알게 된 계기','짧게'],['따라 하기','3단계'],['결과','얼마나 이득인지'],['주변에 알려주세요','공유 유도']],
+ chk:['공식 출처와 기준일을 적었다','신청 기한을 확인했다','단계별 캡처를 넣었다'],
+ ts:'평일 9~11시',th:'평일 7~9시, 12~13시',
+ tb:['5분이면 끝','안 하면 손해','대상 확인하세요']},
+daily:{n:'📝 일상·에세이',sx:['일상','기록','생각','후기'],
+ tags:['일상기록','일상블로그','소소한일상','주간일기','오늘의기록','생각정리'],
+ need:[['구체적 장면',/오늘|어제|아침|저녁|주말|그날/],['감정·생각',/느꼈|생각|마음|기분|좋았|힘들/]],
+ st:['{k} 기록 | '+M+'월의 일상 정리','{k} 후기와 느낀 점','{k} 하루 일과 정리'],
+ ht:['{k}, 별일 없이 좋았던 하루','요즘 {k} 하면서 드는 생각','{k} 그리고 아무도 묻지 않은 근황'],
+ so:[['오늘의 한 줄','{k} 요약'],['있었던 일','시간순'],['장소·정보','필요한 정보는 따로'],['느낀 점','솔직하게'],['다음 계획','마무리']],
+ ho:[['한 장면으로 시작','대표 사진'],['있었던 일','대화하듯'],['작은 반전','웃음 포인트'],['지금 드는 생각','한두 문장'],['안부 묻기','이웃에게 질문']],
+ chk:['타인 얼굴·차량번호 등 개인정보를 가렸다','대표 사진을 골랐다'],
+ ts:'평일 21~23시',th:'평일 21~24시, 일 저녁',
+ tb:['요즘 근황','소소한 하루','이번 주 기록']},
+car:{n:'🚗 자동차',sx:['시승기','가격','연비','옵션','비교','유지비'],
+ tags:['자동차리뷰','시승기','신차','차량관리','자동차정보','드라이브'],
+ need:[['모델·연식·트림',/연식|트림|\d{4}년형|모델/],['가격·유지비',/\d[\d,]*\s?(원|만원)|가격|보험|유지비|세금/],['연비·제원',/연비|km\/?L|마력|토크|전비|주행거리/i],['장단점',/장점|단점|아쉬/]],
+ st:['{k} 가격·옵션·연비 총정리','{k} 시승기 | 장단점과 추천 트림','{k} 유지비 계산, 1년 타본 실제 비용'],
+ ht:['{k} 1년 타보고 말합니다','{k}, 계약 전에 꼭 확인할 것','{k} 실연비 이 정도 나옵니다'],
+ so:[['한 줄 결론','{k} 추천 대상'],['가격·트림','표로'],['외관·실내','사진'],['주행·연비','실측 수치'],['유지비','보험·세금·소모품'],['단점','솔직하게'],['비교·정리','경쟁 모델']],
+ ho:[['한 컷','가장 멋진 사진'],['타게 된 계기','짧게'],['타보니','상황별 감상'],['의외의 단점','신뢰 포인트'],['결론','질문으로 마무리']],
+ chk:['번호판을 가렸다','연식·트림을 적었다','실측 수치를 넣었다'],
+ ts:'평일 12~13시, 20~22시',th:'토·일 9~11시',
+ tb:['1년 실사용','실연비 공개','계약 전 필독']},
+pet:{n:'🐶 반려동물',sx:['추천','후기','방법','비용','주의사항','훈련'],
+ tags:['반려견','반려묘','멍스타그램','집사일기','강아지용품','고양이용품'],
+ need:[['품종·나이·체중',/\d+\s?(살|개월|kg)|품종|견종|묘종/],['비용',/\d[\d,]*\s?원|비용|가격/],['주의·안전',/주의|위험|알레르기|금지/],['전문가 안내',/수의사|병원|상담/]],
+ st:['{k} 방법과 주의사항 정리','{k} 추천 | 체중·나이별 선택 기준','{k} 비용과 후기, 직접 해본 과정'],
+ ht:['{k}, 우리 애는 이랬어요','{k} 써보고 반응이 달라졌어요','초보 집사가 {k} 하며 배운 것'],
+ so:[['한 줄 결론','{k} 요약'],['우리 아이 정보','품종·나이·체중'],['선택 기준·방법','단계별'],['사용·적용 후기','사진·영상'],['비용','구매처'],['주의사항','수의사 상담 안내'],['정리','추천 대상']],
+ ho:[['귀여운 한 컷','대표 사진'],['상황 설명','짧게'],['반응 모음','사진 위주'],['배운 점','한 줄 팁'],['다른 집은?','질문으로 마무리']],
+ chk:['아이 정보(나이·체중)를 적었다','건강 관련 단정 표현이 없다','수의사 상담 안내를 넣었다(건강 주제)'],
+ ts:'평일 20~23시',th:'평일 12~13시, 21~23시',
+ tb:['우리 애 반응','초보 집사 필독','이건 재구매']},
+culture:{n:'🎬 영화·책·공연',sx:['후기','리뷰','줄거리','결말','해석','평점'],
+ tags:['영화리뷰','책리뷰','드라마추천','독서기록','공연후기','넷플릭스추천'],
+ need:[['기본 정보',/감독|작가|저자|출연|출판|개봉|러닝타임|장르/],['스포일러 표시',/스포/],['평가',/평점|별점|추천|아쉬/]],
+ st:['{k} 후기 | 줄거리·결말 해석 (스포 주의)','{k} 리뷰, 볼만한 이유와 아쉬운 점','{k} 정보·출연진·관람 포인트 정리'],
+ ht:['{k} 보고 며칠째 생각나는 장면','{k}, 기대 없이 봤다가','{k} 이 한 문장 때문에 읽었습니다'],
+ so:[['기본 정보','{k} 장르·제작진'],['스포 없는 줄거리','3~4문장'],['좋았던 점','장면·문장 인용은 짧게'],['아쉬운 점','균형'],['해석(스포 주의 표시)','구분선 뒤에'],['추천 대상','비슷한 작품'],['한 줄 평','평점']],
+ ho:[['한 문장·한 장면','가장 남은 것'],['보게 된 계기','짧게'],['감상','개인적 경험과 연결'],['여운','한두 문장'],['여러분은?','질문으로 마무리']],
+ chk:['스포일러 여부를 맨 위에 밝혔다','포스터·스틸컷 출처를 표기했다','본문 인용이 과하지 않다'],
+ ts:'금 18~22시, 토·일',th:'금·토 20~24시',
+ tb:['스포 없는 후기','결말 해석','볼까 말까']}
+};
+const GEN={
+ seo:['{k} 총정리, '+Y+'년 기준 꼭 알아야 할 5가지','{k} 방법부터 주의사항까지 한 번에 정리','{k} 추천 TOP 5 ('+Y+'년 '+M+'월 업데이트)','{k} 장단점 비교, 선택 전 체크할 것','{k} 자주 묻는 질문 7가지 정리'],
+ home:['{k}, 저만 몰랐나요? 해보고 알게 된 것들','솔직히 {k} 이 정도일 줄 몰랐어요','{k} 하기 전에 이것만은 꼭 보세요','{k} 3번 실패하고 알게 된 한 가지','요즘 다들 {k} 하는 진짜 이유']
+};
+const PHR={
+ seo:{in:['{k} 찾고 계신가요? 이 글에서 조건, 방법, 주의사항을 순서대로 정리했습니다.','{k}에 대해 직접 알아보고 정리한 내용입니다. 바쁘신 분은 아래 요약만 보셔도 됩니다.','오늘은 {k}를 처음 알아보는 분도 이해할 수 있게 핵심만 담았습니다.'],
+      out:['지금까지 {k}에 대해 정리했습니다. 내용은 작성일 기준이며 바뀔 수 있으니 공식 안내도 함께 확인해 주세요.','{k} 관련해 궁금한 점은 댓글로 남겨 주시면 아는 범위에서 답변드리겠습니다.']},
+ home:{in:['결론부터 말하면, {k} 생각보다 훨씬 좋았습니다.','{k}, 사실 별 기대 없이 시작했어요.','이 사진 한 장 때문에 {k} 이야기를 쓰게 됐습니다.'],
+      out:['여러분은 {k} 어떻게 하고 계신가요? 댓글로 알려주세요.','다음 글에서는 {k} 그 후 이야기를 가져올게요.','도움이 됐다면 공감 한 번 눌러주세요. 큰 힘이 됩니다.']}
+};
+const CL={
+ seo:['메인 키워드를 실제로 네이버에 검색해 상위 글의 구성을 확인했다','제목 앞쪽에 메인 키워드를 넣었다','첫 문단에 키워드와 글의 결론을 넣었다','소제목을 3개 이상 쓰고 소제목에도 키워드·서브 키워드를 넣었다','직접 찍거나 만든 이미지를 넣었다 (퍼온 이미지 최소화)','표·목록·인용구로 핵심 정보를 정리했다','다른 글에서 복사한 문장이 없다 (유사문서 주의)','수치·날짜·출처를 확인했다','외부 링크는 꼭 필요한 것만 넣었다','카테고리와 주제 분류를 글 내용과 맞췄다','태그를 넣었다 (10~15개)','모바일 미리보기로 줄바꿈과 사진 순서를 확인했다','맞춤법 검사를 돌렸다','공개 설정 · 검색 허용 · 댓글 허용을 확인했다'],
+ home:['대표 이미지(썸네일)가 한눈에 내용이 보이게 선명하다','썸네일 문구는 10자 안팎으로 크게 넣었다','제목이 궁금증·숫자·경험 중 하나를 담고 있다','제목과 내용이 일치한다 (낚시성 아님)','첫 3줄 안에 결론 또는 가장 강한 장면을 넣었다','사진이 고화질이고 직접 찍은 것이다','문단은 2~3문장으로 짧게 끊었다','끝까지 읽을 이유(반전·정리·팁)를 뒤쪽에 뒀다','마지막에 댓글·공감을 부르는 질문을 넣었다','주제 분류를 글에 맞게 설정했다 (주제판 노출의 전제)','태그는 넓은 주제 위주로 5~10개만 넣었다','모바일 미리보기로 첫 화면을 확인했다','맞춤법 검사를 돌렸다','전체 공개 · 검색 허용 · 공감/댓글 허용을 확인했다']
+};
+const RISK=[
+ ['스팸·불법','bad',['카지노','바카라','토토','도박','홀덤','슬롯','먹튀','유흥','성인용품','대포통장','작업대출','불법']],
+ ['과장 광고','warn',['100%','무조건','최저가','업계 1위','국내 최초','세계 최초','기적','완벽 보장','보장합니다','역대급 할인','단연 최고']],
+ ['의료·건강 과장','warn',['완치','특효','부작용 없','부작용이 없','치료 효과','즉시 효과','만병통치','항암 효과','처방 없이','살 빠지는 약']],
+ ['금융 과장','warn',['원금 보장','원금보장','수익 보장','수익보장','확정 수익','고수익','무위험','당일 대출','무직자 대출','급전','리딩방','무료 추천주']],
+ ['외부 유도','warn',['카톡 문의','카카오톡 상담','텔레그램','오픈채팅','상담 문의','지금 바로 클릭','링크 클릭','전화 주세요','DM 주세요']]
+];
+const DISC={
+ none:['이 글은 직접 구매해 사용한 뒤 작성한 내돈내산 후기입니다.'],
+ free:['이 글은 {b}로부터 제품(서비스)을 무상으로 제공받아 작성했습니다.','[광고] 업체로부터 제품을 제공받아 직접 사용해 보고 솔직하게 작성한 후기입니다.'],
+ paid:['이 글은 {b}로부터 원고료를 지급받아 작성했습니다.','[광고] 소정의 원고료와 제품을 제공받아 작성한 글입니다.'],
+ aff:['이 포스팅은 제휴 마케팅 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.','이 글에는 제휴 링크가 포함되어 있으며 구매 시 작성자가 수수료를 받을 수 있습니다.'],
+ exp:['이 글은 체험단에 선정되어 {b}로부터 제품(서비스)을 제공받아 작성했습니다.']
+};
+const STOP=new Set('그리고 그래서 하지만 그런데 그러나 정말 진짜 너무 아주 조금 많이 이번 오늘 저는 제가 우리 이렇게 그렇게 있습니다 합니다 입니다 있어요 같아요 했어요 하는 있는 때문 정도 경우 통해 대한 위해 것이 것은 것을 수도 바로 다시 그냥 약간 이제 여기 거기 저기 그것 이것 저것 하고 해서 하면 에서 으로'.split(' '));
+
+/* ================= 상태 ================= */
+const $=id=>document.getElementById(id);
+const KEY='nbp_v1';
+let S={mode:'seo',topic:'food',kw:'',subs:'',title:'',body:'',imgs:'',vids:'',ad:'none',myban:'',done:{},tagOff:{}};
+try{Object.assign(S,JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){}
+if(!T[S.topic])S.topic='food';
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const rx=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+const kwRx=k=>new RegExp(k.trim().split(/\s+/).map(rx).join('\\s*'),'g');
+const fill=s=>s.replace(/\{k\}/g,S.kw.trim()||'키워드');
+const nos=s=>s.replace(/\s/g,'');
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),1500)}
+async function copy(txt,msg){
+  try{await navigator.clipboard.writeText(txt)}catch(e){
+    const a=document.createElement('textarea');a.value=txt;a.style.position='fixed';a.style.opacity=0;document.body.appendChild(a);a.select();
+    try{document.execCommand('copy')}catch(_){}a.remove();
+  }
+  toast(msg||'복사했습니다');
+}
+
+/* ================= 분석 ================= */
+function analyze(){
+  const mode=S.mode,tp=T[S.topic],body=S.body||'',title=(S.title||'').trim(),kw=S.kw.trim();
+  const subs=S.subs.split(',').map(s=>s.trim()).filter(Boolean);
+  const all=body.length,ns=nos(body).length;
+  const lines=body.split('\n').map(l=>l.trim()).filter(Boolean);
+  const sents=body.split(/(?<=[.!?…。])\s+|\n+/).map(s=>s.trim()).filter(s=>s.length>1);
+  const avgS=sents.length?Math.round(sents.reduce((a,s)=>a+s.length,0)/sents.length):0;
+  const autoImg=(body.match(/[\[(（]\s*(사진|이미지|그림|움짤|캡처|image|photo)[^\])）]{0,20}[\])）]/gi)||[]).length;
+  const imgs=S.imgs!==''?+S.imgs:autoImg, vids=+S.vids||0;
+  const heads=lines.filter(l=>l.length>=3&&l.length<=32&&!/[.!?~…요다]$/.test(l)&&!/^[\[(#]/.test(l)||/^(\d+[.)]|[①-⑩■▶◆●✅📌#])\s?\S/.test(l)&&l.length<=40).length;
+  const longL=lines.filter(l=>l.length>180).length;
+  const kc=kw?(body.match(kwRx(kw))||[]).length:0;
+  const dens=kw&&ns?kc*nos(kw).length/ns*100:0;
+  const first=body.slice(0,220),last=body.slice(-300);
+  const links=(body.match(/https?:\/\/\S+/g)||[]).length;
+  const phone=/01[016789][-\s.]?\d{3,4}[-\s.]?\d{4}/.test(body);
+  // 위험 표현
+  const hits=[];let riskWords=[];
+  RISK.forEach(([cat,lv,ws])=>{const f=ws.filter(w=>(title+'\n'+body).includes(w));if(f.length){hits.push({cat,lv,f});riskWords.push(...f)}});
+  const my=S.myban.split(',').map(s=>s.trim()).filter(Boolean).filter(w=>(title+'\n'+body).includes(w));
+  if(my.length){hits.push({cat:'내 금칙어',lv:'warn',f:my});riskWords.push(...my)}
+  // 중복 문장
+  const seen={},dup=[];sents.forEach(s=>{const k=nos(s);if(k.length>=15){seen[k]=(seen[k]||0)+1;if(seen[k]===2)dup.push(s)}});
+  // 단어 빈도
+  const fq={};(body.match(/[가-힣A-Za-z0-9]{2,}/g)||[]).forEach(w=>{
+    if(w.length>2)w=w.replace(/(입니다|습니다|합니다|했어요|해요|에서는|에서|으로|에게|까지|부터|처럼|보다|이나|은|는|이|가|을|를|의|에|로|와|과|도|만)$/,'');
+    if(w.length<2||STOP.has(w)||/^\d+$/.test(w))return;fq[w]=(fq[w]||0)+1});
+  const top=Object.entries(fq).sort((a,b)=>b[1]-a[1]).slice(0,12);
+  const kwParts=new Set(kw.split(/\s+/).concat(nos(kw)));
+  const over=top.filter(([w,c])=>!kwParts.has(w)&&c>=Math.max(12,ns/120));
+  // 주제 필수 정보
+  const miss=tp.need.filter(([,r])=>!r.test(body)).map(([n])=>n);
+  // 광고 표시
+  const discRx=/제공받|지원받|원고료|협찬|체험단|수수료를|제휴\s?(링크|마케팅)|\[광고\]|유료\s?광고|내돈내산/;
+  const discTop=discRx.test(body.slice(0,Math.max(300,all*0.15))),discAny=discRx.test(body);
+  const sponsorHint=/제공받|협찬|원고료|체험단|파트너스|제휴/.test(body);
+  // 제목
+  const tl=title.length,tHas=kw&&kwRx(kw).test(title),tPos=kw?title.search(kwRx(kw)):-1;
+  const hook=/\d|[?!]|솔직|진짜|결국|이유|몰랐|후회|꿀팁|직접|내돈내산|비결|차이|반전|드디어|해봤|써보|가봤/.test(title);
+  const tSpec=(title.match(/[★☆♥♡◆■▶※~!?]{2,}|[\u{1F300}-\u{1FAFF}]/gu)||[]).length;
+
+  const C=[];const add=(w,st,l,m)=>C.push({w,st,l,m});
+  const has=body.trim().length>0;
+  // 1 제목 길이
+  if(!title)add(8,'bad','제목','제목을 입력하세요.');
+  else if(mode==='seo')add(8,tl>=15&&tl<=40?'ok':tl>=10&&tl<=50?'warn':'bad','제목 길이 '+tl+'자','SEO형 권장 15~40자. 검색 결과에서 뒤가 잘리지 않게 핵심은 앞쪽에.');
+  else add(8,tl>=12&&tl<=32?'ok':tl>=8&&tl<=40?'warn':'bad','제목 길이 '+tl+'자','홈판형 권장 12~32자. 피드 카드에서 두 줄 안에 읽히는 길이.');
+  // 2 제목 키워드
+  if(!kw)add(mode==='seo'?10:4,'bad','메인 키워드','메인 키워드를 입력하면 키워드 관련 점검이 켜집니다.');
+  else if(mode==='seo')add(10,tHas?(tPos<=12?'ok':'warn'):'bad','제목 속 키워드',tHas?(tPos<=12?'키워드가 제목 앞쪽에 있습니다.':'키워드가 뒤쪽에 있습니다. 앞 12자 안으로 옮겨 보세요.'):'제목에 메인 키워드가 없습니다.');
+  else add(4,tHas?'ok':'warn','제목 속 키워드',tHas?'키워드가 포함되어 있습니다.':'홈판형이라도 주제를 알 수 있는 단어 하나는 넣는 편이 좋습니다.');
+  // 3 훅
+  if(title)add(mode==='home'?10:3,hook?'ok':(mode==='home'?'bad':'warn'),'제목의 끌림 요소',hook?'숫자·질문·경험 표현이 있습니다.':'숫자, 질문, 직접 해본 경험 표현 중 하나를 넣어 보세요.');
+  if(tSpec)add(3,'warn','제목 특수문자','반복 특수문자·이모지는 스팸처럼 보일 수 있습니다.');
+  if(!has){return {C,stats:{all,ns,lines:lines.length,sents:sents.length,avgS,imgs,vids,heads,kc,dens,links},top,hits,riskWords,empty:true}}
+  // 4 분량
+  if(mode==='seo')add(10,ns>=1500&&ns<=4000?'ok':ns>=1000&&ns<=5500?'warn':'bad','본문 분량 '+ns.toLocaleString()+'자 (공백 제외)','SEO형 권장 1,500~4,000자. 부족하면 FAQ·비교·주의사항을 추가하세요.');
+  else add(7,ns>=700&&ns<=2500?'ok':ns>=400&&ns<=3500?'warn':'bad','본문 분량 '+ns.toLocaleString()+'자 (공백 제외)','홈판형 권장 700~2,500자. 사진 중심으로 끝까지 읽히는 길이.');
+  // 5 키워드 반복
+  if(kw){
+    if(mode==='seo')add(10,kc>=4&&kc<=12&&dens<=3?'ok':(kc>=2&&dens<=4?'warn':'bad'),'키워드 반복 '+kc+'회 · 밀도 '+dens.toFixed(1)+'%',kc<4?'SEO형은 4~12회 권장. 소제목과 첫·끝 문단에 자연스럽게 넣으세요.':dens>3?'너무 잦습니다. 일부를 유의어·서브 키워드로 바꾸세요.':'적정 범위입니다.');
+    else add(4,kc>=1&&kc<=8?'ok':'warn','키워드 반복 '+kc+'회',kc<1?'본문에 주제 단어가 한 번도 없습니다.':kc>8?'홈판형에서는 반복이 많으면 광고처럼 읽힙니다.':'자연스러운 수준입니다.');
+  }
+  // 6 도입부
+  if(mode==='seo'&&kw)add(8,kwRx(kw).test(first)?'ok':'bad','첫 문단 키워드',kwRx(kw).test(first)?'도입부에 키워드가 있습니다.':'첫 2~3문장 안에 메인 키워드와 결론을 넣으세요.');
+  if(mode==='home'){const f=(sents[0]||'').length;add(8,f&&f<=45?'ok':f<=70?'warn':'bad','첫 문장 '+f+'자','홈판형은 첫 문장이 짧고 강할수록 이탈이 줄어듭니다 (45자 이내 권장).')}
+  // 7 서브 키워드
+  if(subs.length){const inc=subs.filter(s=>kwRx(s).test(body));add(mode==='seo'?6:2,inc.length===subs.length?'ok':inc.length?'warn':'bad','서브 키워드 '+inc.length+'/'+subs.length,inc.length===subs.length?'모두 반영되었습니다.':'빠진 키워드: '+subs.filter(s=>!inc.includes(s)).join(', '))}
+  else if(mode==='seo')add(3,'warn','서브 키워드','서브 키워드 2~3개를 정해 소제목에 넣으면 유입 경로가 넓어집니다.');
+  // 8 소제목
+  add(mode==='seo'?7:3,heads>=(mode==='seo'?3:2)?'ok':heads>=1?'warn':(mode==='seo'?'bad':'warn'),'소제목 추정 '+heads+'개',mode==='seo'?'SEO형은 소제목 3개 이상으로 정보를 구획하세요.':'긴 글이면 소제목 2개 정도로 숨 쉴 곳을 만드세요.');
+  // 9 이미지
+  const needI=mode==='seo'?6:8;
+  add(mode==='home'?10:7,imgs>=needI?'ok':imgs>=needI/2?'warn':'bad','사진 '+imgs+'장'+(vids?' · 영상 '+vids+'개':''),(mode==='seo'?'SEO형 권장 6장 이상':'홈판형 권장 8장 이상')+', 대략 300~400자마다 1장.'+(S.imgs===''?' (본문의 [사진] 표시를 센 값입니다)':''));
+  // 10 가독성
+  add(mode==='home'?7:5,longL===0&&avgS<=70?'ok':longL<=2?'warn':'bad','가독성 · 평균 문장 '+avgS+'자',longL?'180자 넘는 줄이 '+longL+'개 있습니다. 모바일에서는 벽처럼 보입니다. 도구 탭의 가독성 정리를 써 보세요.':'문단 길이가 적당합니다.');
+  // 11 위험
+  const badHit=hits.some(h=>h.lv==='bad');
+  add(9,!hits.length&&!phone?'ok':badHit?'bad':'warn','위험 표현',hits.length?hits.map(h=>h.cat+': '+h.f.join(', ')).join(' / ')+(phone?' / 전화번호 노출':''):phone?'전화번호가 본문에 있습니다. 필요한지 확인하세요.':'걸리는 표현이 없습니다.');
+  // 12 중복
+  add(5,dup.length?(dup.length>2?'bad':'warn'):'ok','중복 문장 '+dup.length+'건',dup.length?'같은 문장이 반복됩니다: “'+dup[0].slice(0,40)+'…”':'반복되는 문장이 없습니다.');
+  // 13 링크
+  add(3,links<=2?'ok':links<=4?'warn':'bad','외부 링크 '+links+'개',links<=2?'적정합니다.':'링크가 많으면 홍보성 글로 보일 수 있습니다.');
+  // 14 필수 정보
+  add(mode==='seo'?8:3,miss.length===0?'ok':miss.length<=Math.ceil(tp.need.length/2)?'warn':'bad','주제 필수 정보 '+(tp.need.length-miss.length)+'/'+tp.need.length,miss.length?'빠진 것으로 보이는 항목: '+miss.join(', '):'이 주제에서 독자가 찾는 정보가 모두 있습니다.');
+  // 15 광고 표시
+  if(S.ad!=='none')add(9,discTop?'ok':discAny?'warn':'bad','광고·협찬 표시',discTop?'글 첫 부분에 표시 문구가 있습니다.':discAny?'표시 문구가 뒤쪽에 있습니다. 글 첫 부분으로 올리세요.':'표시 문구가 없습니다. 도구 탭에서 복사해 맨 위에 넣으세요.');
+  else if(sponsorHint&&!/내돈내산/.test(body))add(5,'warn','광고·협찬 표시','본문에 협찬·제공 관련 표현이 있습니다. 해당된다면 ‘협찬·광고 여부’를 선택하세요.');
+  // 16 과다 반복
+  if(over.length)add(4,'warn','과다 반복 단어',over.map(([w,c])=>w+' '+c+'회').join(', ')+' — 유의어로 바꿔 보세요.');
+  // 17 마무리
+  if(mode==='home')add(6,/[?？]|댓글|공감|이웃|알려주세요/.test(last)?'ok':'warn','마무리 참여 유도','끝에 질문이나 댓글·공감 유도 한 문장을 넣으면 반응이 늘어납니다.');
+  else if(kw)add(4,kwRx(kw).test(last)?'ok':'warn','마무리 문단 키워드','마지막 문단에서 키워드를 넣어 요약하세요.');
+  return {C,stats:{all,ns,lines:lines.length,sents:sents.length,avgS,imgs,vids,heads,kc,dens,links},top,hits,riskWords,empty:false};
+}
+
+/* ================= 렌더 ================= */
+let R=null;
+function render(){
+  const tp=T[S.topic],mode=S.mode,kw=S.kw.trim();
+  document.body.classList.toggle('home',mode==='home');
+  document.querySelectorAll('#modeSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===mode));
+  document.querySelectorAll('#topicChips .chip').forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===S.topic));
+  $('titleLen').textContent=S.title?S.title.trim().length+'자':'';
+  $('bodyLen').textContent=S.body?S.body.length.toLocaleString()+'자 (공백 제외 '+nos(S.body).length.toLocaleString()+'자)':'';
+  $('modeBadge').textContent=(mode==='seo'?'SEO형':'홈판형')+' · '+tp.n.replace(/^\S+\s/,'');
+  R=analyze();
+  // 점수
+  const tw=R.C.reduce((a,c)=>a+c.w,0),gw=R.C.reduce((a,c)=>a+c.w*(c.st==='ok'?1:c.st==='warn'?.5:0),0);
+  const sc=R.empty?null:Math.round(gw/tw*100);R.score=sc;
+  $('ring').style.setProperty('--p',sc||0);$('scoreN').textContent=sc===null?'–':sc;
+  $('scoreT').textContent=sc===null?'본문 대기':sc>=85?'발행 OK':sc>=70?'조금만 더':sc>=50?'보완 필요':'재작성 권장';
+  const s=R.stats;
+  $('stats').innerHTML=[['글자수',s.all.toLocaleString()],['공백 제외',s.ns.toLocaleString()],['문장',s.sents],['평균 문장',s.avgS+'자'],['키워드',s.kc+'회'],['밀도',s.dens.toFixed(1)+'%'],['사진',s.imgs],['소제목',s.heads]].map(([a,b])=>`<div class="stat"><b>${b}</b><span>${a}</span></div>`).join('');
+  const ord={bad:0,warn:1,ok:2};
+  $('checks').innerHTML=R.C.slice().sort((a,b)=>ord[a.st]-ord[b.st]||b.w-a.w).map(c=>`<li class="${c.st}"><span class="dot">${c.st==='ok'?'✓':c.st==='warn'?'!':'✕'}</span><div><b>${esc(c.l)}</b><p>${esc(c.m)}</p></div></li>`).join('');
+  // 하이라이트
+  if(S.body.trim()){
+    let h=esc(S.body);
+    const rw=[...new Set(R.riskWords)].sort((a,b)=>b.length-a.length);
+    if(rw.length)h=h.replace(new RegExp(rw.map(w=>rx(esc(w))).join('|'),'g'),m=>'\u0001'+m+'\u0002');
+    if(kw)h=h.replace(kwRx(esc(kw)),m=>'<mark class="k">'+m+'</mark>');
+    $('prev').innerHTML=h.replace(/\u0001/g,'<mark class="r">').replace(/\u0002/g,'</mark>');
+  }else $('prev').textContent='본문을 붙여넣으면 표시됩니다.';
+  $('freq').innerHTML=R.top.length?R.top.map(([w,c])=>`<tr><td>${esc(w)}</td><td>${c}회</td></tr>`).join(''):'<tr><td style="color:var(--mute)">본문 대기</td><td></td></tr>';
+  // 제목
+  $('tiHint').textContent=mode==='seo'?'키워드를 앞에, 정보를 약속하는 형태':'궁금증·경험·숫자로 클릭을 부르는 형태';
+  const tl=(mode==='seo'?tp.st.concat(GEN.seo):tp.ht.concat(GEN.home)).map(fill);
+  $('titles').innerHTML=tl.map((t,i)=>`<li><span class="t">${esc(t)}</span><span class="n">${t.length}자</span><button class="btn" data-use="${i}">적용</button><button class="btn" data-cp="${i}">복사</button></li>`).join('');
+  $('titles').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.cp)copy(tl[b.dataset.cp]);else{S.title=tl[b.dataset.use];$('title').value=S.title;save();render();toast('제목에 적용했습니다')}};
+  $('thumbs').innerHTML=tp.tb.concat(kw?[kw+' 총정리',kw+' 솔직후기']:[]).map(t=>`<li><span class="t">${esc(t)}</span><span class="n">${t.length}자</span><button class="btn" data-c="${esc(t)}">복사</button></li>`).join('');
+  // 구조
+  const ol=mode==='seo'?tp.so:tp.ho;
+  $('olHint').textContent=mode==='seo'?'정보를 빠짐없이, 소제목 단위로':'장면 → 감정 → 결론, 사진 중심';
+  $('outline').innerHTML=ol.map(([a,b])=>`<li><b>${esc(fill(a))}</b><small>${esc(fill(b))}</small></li>`).join('');
+  R.olText=ol.map(([a,b],i)=>(i+1)+'. '+fill(a)+'\n   - '+fill(b)).join('\n');
+  const ph=PHR[mode];
+  $('phrases').innerHTML=ph.in.map(t=>['도입',fill(t)]).concat(ph.out.map(t=>['마무리',fill(t)])).map(([k,t])=>`<li><span class="n">${k}</span><span class="t">${esc(t)}</span><button class="btn" data-c="${esc(t)}">복사</button></li>`).join('');
+  // 태그
+  const subs=S.subs.split(',').map(x=>x.trim()).filter(Boolean);
+  let tg=[];
+  if(kw){tg.push(nos(kw));if(mode==='seo')tp.sx.slice(0,4).forEach(x=>tg.push(nos(kw)+x));else tg.push(nos(kw)+tp.sx[0])}
+  subs.forEach(x=>tg.push(nos(x)));
+  if(kw&&kw.includes(' '))kw.split(/\s+/).forEach(x=>x.length>1&&tg.push(x));
+  tg=tg.concat(tp.tags);
+  tg=[...new Set(tg.map(t=>t.replace(/[^가-힣A-Za-z0-9_]/g,'')).filter(Boolean))].slice(0,mode==='seo'?15:8);
+  R.tags=tg;
+  $('tgHint').textContent=mode==='seo'?'롱테일 포함 10~15개':'넓은 주제 5~8개';
+  $('tags').innerHTML=tg.map(t=>`<button class="chip${S.tagOff[t]?' off':''}" data-tag="${esc(t)}">#${esc(t)}</button>`).join('');
+  const q=encodeURIComponent(kw);
+  $('longtail').innerHTML=kw?tp.sx.map(x=>`<a target="_blank" rel="noopener" href="https://search.naver.com/search.naver?ssc=tab.blog.all&query=${encodeURIComponent(kw+' '+x)}">${esc(kw+' '+x)}</a>`).join(''):'<span style="color:var(--mute);font-size:13px">메인 키워드를 입력하세요.</span>';
+  $('research').innerHTML=[['네이버 통합검색','https://search.naver.com/search.naver?query='+q],['블로그 탭 (경쟁 글)','https://search.naver.com/search.naver?ssc=tab.blog.all&query='+q],['데이터랩 검색어 트렌드','https://datalab.naver.com/keyword/trendSearch.naver'],['검색광고 키워드 도구','https://searchad.naver.com/'],['크리에이터 어드바이저','https://creator-advisor.naver.com/'],['맞춤법 검사기','https://search.naver.com/search.naver?query='+encodeURIComponent('맞춤법 검사기')]].map(([n,u])=>`<a target="_blank" rel="noopener" href="${u}">${n}</a>`).join('');
+  // 체크리스트
+  const ck=CL[mode].concat(tp.chk).concat(S.ad!=='none'?['광고·협찬 표시 문구를 글 첫 부분에 넣었다']:[]),dk=mode+'/'+S.topic;
+  const dn=S.done[dk]||{};
+  $('todo').innerHTML=ck.map((t,i)=>`<label><input type="checkbox" data-i="${i}" ${dn[t]?'checked':''}><span>${esc(t)}</span></label>`).join('');
+  const cnt=ck.filter(t=>dn[t]).length;
+  $('clCount').textContent=cnt+' / '+ck.length;$('clBar').style.width=(cnt/ck.length*100)+'%';
+  $('todo').onchange=e=>{const i=e.target.dataset.i;if(i===undefined)return;(S.done[dk]=S.done[dk]||{})[ck[i]]=e.target.checked;save();render()};
+  $('timeBox').innerHTML=`<p style="margin:0"><b>${mode==='seo'?tp.ts:tp.th}</b></p><p class="note">${mode==='seo'?'SEO형은 검색 수요가 몰리기 2~3시간 전에 발행해 두는 편이 유리하다는 경험칙입니다. 시의성 키워드는 이슈 직후가 우선입니다.':'홈판형은 이용자가 피드를 넘기는 시간대에 맞추는 편이 좋다는 경험칙입니다. 내 블로그 통계의 시간대별 조회수가 가장 정확합니다.'}</p>`;
+  // 광고 문구
+  R.disc=DISC[S.ad].map(t=>t.replace('{b}','○○'));
+  $('disc').innerHTML=R.disc.map(t=>`<li><span class="t">${esc(t)}</span><button class="btn" data-c="${esc(t)}">복사</button></li>`).join('');
+}
+const activeTags=()=>R.tags.filter(t=>!S.tagOff[t]).map(t=>'#'+t).join(' ');
+
+/* ================= 이벤트 ================= */
+$('topicChips').innerHTML=Object.entries(T).map(([k,v])=>`<button class="chip" data-t="${k}">${v.n}</button>`).join('');
+$('topicChips').onclick=e=>{const b=e.target.closest('.chip');if(b){S.topic=b.dataset.t;save();render()}};
+$('modeSeg').onclick=e=>{const b=e.target.closest('button');if(b){S.mode=b.dataset.mode;save();render()}};
+['kw','subs','title','body','imgs','vids','ad','myban'].forEach(id=>{
+  $(id).value=S[id]??'';let tm;
+  $(id).addEventListener('input',()=>{S[id]=$(id).value;clearTimeout(tm);tm=setTimeout(()=>{save();render()},id==='body'?250:120)});
+});
+$('tabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;
+  document.querySelectorAll('#tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));
+  document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.id==='p-'+b.dataset.tab))};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-c]');if(b)copy(b.dataset.c)});
+$('tags').onclick=e=>{const b=e.target.closest('[data-tag]');if(b){const t=b.dataset.tag;S.tagOff[t]=!S.tagOff[t];save();render()}};
+$('cpTg').onclick=()=>copy(activeTags(),'태그를 복사했습니다');
+$('cpOl').onclick=()=>copy(R.olText,'뼈대를 복사했습니다');
+$('clClear').onclick=()=>{delete S.done[S.mode+'/'+S.topic];save();render()};
+function mobile(){
+  const n=+$('mobN').value;
+  return S.body.split(/\n\s*\n/).map(p=>{
+    const ss=p.replace(/\n/g,' ').split(/(?<=[.!?…。])\s+/).map(s=>s.trim()).filter(Boolean);
+    const o=[];for(let i=0;i<ss.length;i+=n)o.push(ss.slice(i,i+n).join('\n'));return o.join('\n\n');
+  }).filter(Boolean).join('\n\n');
+}
+$('mkMobile').onclick=()=>{if(!S.body.trim())return toast('본문을 먼저 붙여넣으세요');$('mobile').value=mobile();toast('변환했습니다')};
+$('cpMobile').onclick=()=>{if(!$('mobile').value)$('mobile').value=mobile();copy($('mobile').value)};
+$('cpPack').onclick=()=>copy([S.title.trim(),S.ad!=='none'?R.disc[0]:'',S.body.trim(),activeTags()].filter(Boolean).join('\n\n'),'패키지를 복사했습니다');
+$('btnReport').onclick=()=>{
+  const m={ok:'✓',warn:'!',bad:'✕'};
+  copy(`[네이버 블로그 사전 점검] ${S.mode==='seo'?'SEO형':'홈판형'} · ${T[S.topic].n}\n제목: ${S.title}\n키워드: ${S.kw}\n점수: ${R.score??'-'}점\n\n`+R.C.map(c=>`${m[c.st]} ${c.l} — ${c.m}`).join('\n')+`\n\n태그: ${activeTags()}`,'리포트를 복사했습니다');
+};
+$('btnReset').onclick=()=>{if(!confirm('입력한 내용을 모두 지울까요?'))return;
+  S={mode:S.mode,topic:S.topic,kw:'',subs:'',title:'',body:'',imgs:'',vids:'',ad:'none',myban:S.myban,done:{},tagOff:{}};
+  ['kw','subs','title','body','imgs','vids','ad'].forEach(id=>$(id).value=S[id]);$('mobile').value='';save();render()};
+render();
+</script>
+</body>
+</html>
