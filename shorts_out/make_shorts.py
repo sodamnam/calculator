@@ -8,10 +8,9 @@ F=lambda p,s: ImageFont.truetype(p,s)
 
 # ---- header ----
 im=Image.new('RGBA',(W,HD),(255,255,255,255)); d=ImageDraw.Draw(im)
-d.ellipse((44,22,134,112),fill=(88,40,150)); d.ellipse((50,28,128,106),outline=(255,200,40),width=4)
-d.text((89,67),'CH',font=F(BHS,34),fill=(255,220,80),anchor='mm')
-d.text((156,48),'채널명',font=F(JUA,32),fill=(20,20,20),anchor='lm')
-d.text((156,88),'Channel Name',font=F(JUA,26),fill=(20,20,20),anchor='lm')
+lg=Image.open('/home/user/calculator/shorts_out/logo.png').resize((104,104),Image.LANCZOS); im.paste(lg,(40,14),lg)
+d.text((162,46),'숏탈',font=F(JUA,40),fill=(20,20,20),anchor='lm')
+d.text((162,90),'아무생각 없이 보기 좋은 채널',font=F(JUA,25),fill=(70,70,70),anchor='lm')
 f=F(JUA,58); parts=[('아기가 ',(15,15,15)),('위험해진 순간',(235,20,30))]
 tw=sum(d.textlength(t,font=f) for t,_ in parts); x=(W-tw)/2
 for t,c in parts:
