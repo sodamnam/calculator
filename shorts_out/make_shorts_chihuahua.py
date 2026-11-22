@@ -7,7 +7,7 @@ os.makedirs(OV,exist_ok=True); os.makedirs(CD,exist_ok=True)
 JUA=S+'/fonts/Jua-Regular.ttf'; BHS=S+'/fonts/BlackHanSans-Regular.ttf'
 F=lambda p,s: ImageFont.truetype(p,s)
 
-# header (딴짓극장) + source credit at top-right of the video area
+# header (딴짓극장)
 im=Image.new('RGBA',(W,H),(0,0,0,0)); d=ImageDraw.Draw(im)
 d.rectangle((0,0,W,HD),fill=(255,255,255,255))
 lg=Image.open('/home/user/calculator/shorts_out/logo_ddanjit.png').resize((199,112),Image.LANCZOS); im.paste(lg,(32,10),lg)
@@ -18,8 +18,6 @@ tw=sum(d.textlength(t,font=f) for t,_ in parts); x=(W-tw)/2
 for t,c in parts:
     d.text((x,172),t,font=f,fill=c,anchor='lm'); x+=d.textlength(t,font=f)
 d.text((W/2,248),'1초 만에 조용해진 치와와',font=F(JUA,54),fill=(70,235,40),anchor='mm',stroke_width=5,stroke_fill=(10,10,10))
-t='출처: FurryHouseFinds'; fa=F(JUA,20); wa=d.textlength(t,font=fa); x1=W-12; x0=x1-wa-20
-d.rounded_rectangle((x0,HD+10,x1,HD+42),radius=10,fill=(0,0,0,120)); d.text((x0+10,HD+26),t,font=fa,fill=(255,255,255,235),anchor='lm')
 im.save(OV+'/header.png')
 
 def cap(text,name):
