@@ -18,8 +18,8 @@ tw=sum(d.textlength(t,font=f) for t,_ in parts); x=(W-tw)/2
 for t,c in parts:
     d.text((x,172),t,font=f,fill=c,anchor='lm'); x+=d.textlength(t,font=f)
 d.text((W/2,248),'강아지가 사라집니다',font=F(JUA,58),fill=(70,235,40),anchor='mm',stroke_width=5,stroke_fill=(10,10,10))
-t='출처: @mariaelekessings'; fa=F(JUA,15); wa=d.textlength(t,font=fa); x1=W-8; x0=x1-wa-12
-d.rounded_rectangle((x0,HD+6,x1,HD+28),radius=7,fill=(0,0,0,95)); d.text((x0+6,HD+17),t,font=fa,fill=(255,255,255,215),anchor='lm')
+t='출처: @mariaelekessings'; fa=F(JUA,15); wa=d.textlength(t,font=fa); x0=8; x1=x0+wa+12
+d.rounded_rectangle((x0,H-30,x1,H-8),radius=7,fill=(0,0,0,95)); d.text((x0+6,H-19),t,font=fa,fill=(255,255,255,215),anchor='lm')
 im.save(OV+'/header.png')
 
 def cap(text,name):
