@@ -5,11 +5,16 @@ S='/tmp/claude-0/-home-user-calculator/92091629-437c-5ff5-ac78-cae4819d3258/scra
 BANNER='/root/.claude/uploads/92091629-437c-5ff5-ac78-cae4819d3258/f07f03ee-image.png'
 W,H,FPS=720,1280,30
 JUA=S+'/fonts/Jua-Regular.ttf'; F=lambda s: ImageFont.truetype(JUA,s)
-LINES=[(0,3,'딴짓극장에\n열 분이 앉아 계십니다.'),(3,6,'누군가에겐\n작은 숫자겠지만'),(6,10,'저에겐 객석에\n불이 켜진 날입니다.'),
-       (10,14,'다시 처음부터\n문을 연 극장에'),(14,17,'먼저 찾아와 주셔서\n고맙습니다.'),(17,21,'귀한 시간,\n잠깐 머무르시는 동안'),
-       (21,25,'그 시간만큼은 오로지'),(25,29,'아무 생각 없이 쉬어 가는\n안식처가 되도록 만들겠습니다.'),
-       (29,32,'추운 날씨,\n감기 조심하세요.'),(32,35.5,'딴짓극장 올림')]
-T=35.5
+DISP=['딴짓극장에\n열 분이 앉아 계십니다.','누군가에겐\n작은 숫자겠지만','저에겐 객석에\n불이 켜진 날입니다.','다시 처음부터\n문을 연 극장에','먼저 찾아와 주셔서\n고맙습니다.',
+      '귀한 시간,\n잠깐 머무르시는 동안','그 시간만큼은 오로지','아무 생각 없이 쉬어 가는\n안식처가 되도록 만들겠습니다.','추운 날씨,\n감기 조심하세요.','딴짓극장 올림']
+import json
+LEAD=0.6   # silence before the narration starts
+TM=json.load(open('/home/user/calculator/shorts_out/thanks_10_timing.json'))   # [start, end, text] per line from the TTS alignment
+LINES=[]
+for i,(st,en,_) in enumerate(TM):
+    nxt=TM[i+1][0] if i+1<len(TM) else en+1.6
+    LINES.append((LEAD+st-0.1, LEAD+min(nxt-0.05, en+0.9) if i+1<len(TM) else LEAD+nxt, DISP[i]))
+T=LINES[-1][1]+0.7
 ban=Image.open(BANNER).convert('RGB')
 # background: blurred, darkened banner covering the frame (slightly oversized for slow drift)
 bg=ban.resize((int(1400*ban.width/ban.height),1400),Image.LANCZOS).filter(ImageFilter.GaussianBlur(28))
@@ -28,7 +33,7 @@ random.seed(7); snow=[(random.random()*W,random.random()*H,1.5+random.random()*3
 title1=text_layer('관객 10명 돌파',84,(255,222,70),(40,25,5),1,sw=7); title2=text_layer('감사합니다',52,(255,255,255),(20,20,30),1,sw=5)
 out=sys.argv[1]; audio=sys.argv[2] if len(sys.argv)>2 else None
 cmd=['ffmpeg','-v','error','-y','-f','rawvideo','-pix_fmt','rgb24','-s',f'{W}x{H}','-r',str(FPS),'-i','-']
-if audio: cmd+=['-i',audio,'-c:a','aac','-b:a','192k','-shortest']
+if audio: cmd+=['-i',audio,'-af',f'adelay={int(LEAD*1000)}:all=1,apad,loudnorm=I=-16:TP=-1.5:LRA=11','-c:a','aac','-b:a','192k','-t',f'{T}']
 cmd+=['-c:v','libx264','-crf','19','-preset','medium','-pix_fmt','yuv420p','-movflags','+faststart',out]
 p=subprocess.Popen(cmd,stdin=subprocess.PIPE)
 N=int(T*FPS)
